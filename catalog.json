@@ -1,0 +1,251 @@
+{
+  "version": 1,
+  "groups": [
+    {
+      "id": "product",
+      "label": "Product",
+      "section": "Workflows",
+      "area": "Product",
+      "description": "Define, prepare, design, and build—in workflow order.",
+      "show_steps": true,
+      "skills": [
+        {
+          "name": "product-definition",
+          "step": 1
+        },
+        {
+          "name": "product-setup",
+          "step": 2
+        },
+        {
+          "name": "product-design",
+          "step": 3
+        },
+        {
+          "name": "explore-design",
+          "step": 3
+        },
+        {
+          "name": "product-build",
+          "step": 4
+        },
+        {
+          "name": "google-oauth-integration",
+          "step": 4
+        }
+      ]
+    },
+    {
+      "id": "operations",
+      "label": "Operations",
+      "section": "Workflows",
+      "area": "Operations",
+      "description": "Product reports, errors, and health checks.",
+      "skills": [
+        {
+          "name": "product-reports",
+          "step": 8
+        },
+        {
+          "name": "sentry",
+          "step": 14
+        },
+        {
+          "name": "checkly-failures",
+          "step": 14
+        }
+      ]
+    },
+    {
+      "id": "marketing-seo",
+      "label": "SEO & discovery",
+      "skills": [
+        "seo",
+        "ahref",
+        "google-search-console"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Improve discoverability, indexing, and technical SEO."
+    },
+    {
+      "id": "marketing-video",
+      "label": "Video & motion",
+      "skills": [
+        "media-use",
+        "marketing-motion-ad",
+        "talking-head-reel",
+        "faceless-explainer",
+        "motion-video-director",
+        "character-story-ad",
+        "article-card-animation",
+        "create-demo",
+        "compress-video",
+        "youtube-upload",
+        "viral-format-research"
+      ],
+      "prefixes": [
+        "hyperframes"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Create, edit, animate, and publish. All your video tools, together."
+    },
+    {
+      "id": "marketing-images",
+      "label": "Images & visual design",
+      "skills": [
+        "before-and-after",
+        "og-images"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Create product visuals and social preview images."
+    },
+    {
+      "id": "marketing-content",
+      "label": "Content & outreach",
+      "skills": [
+        "social-copy",
+        "email-outreach"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Prepare social copy and personalised outreach."
+    },
+    {
+      "id": "marketing-launch",
+      "label": "Launches",
+      "skills": [
+        "producthunt"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Prepare and publish product launches."
+    },
+    {
+      "id": "marketing-analytics",
+      "label": "Analytics",
+      "skills": [
+        "tiktok-metrics"
+      ],
+      "section": "Marketing",
+      "area": "Marketing",
+      "description": "Measure performance across your social channels."
+    },
+    {
+      "id": "articles",
+      "label": "Articles & publishing",
+      "section": "Personal",
+      "area": "Personal",
+      "skills": [
+        "publish-article"
+      ]
+    },
+    {
+      "id": "jobs",
+      "label": "Jobs & applications",
+      "section": "Personal",
+      "area": "Personal",
+      "skills": [
+        "job-search",
+        "job-cv",
+        "job-feedback"
+      ],
+      "prefixes": [
+        "job-"
+      ]
+    },
+    {
+      "id": "documents",
+      "label": "Documents, sheets & presentations",
+      "section": "Personal",
+      "area": "Personal",
+      "skills": [
+        "pdf"
+      ]
+    },
+    {
+      "id": "productivity",
+      "label": "Personal tools & productivity",
+      "section": "Personal",
+      "area": "Personal",
+      "skills": [
+        "rappi"
+      ]
+    }
+  ],
+  "fallback_group": {
+    "id": "other",
+    "label": "Other skills",
+    "section": "Personal",
+    "area": "Personal"
+  },
+  "plugin_labels": {
+    "vercel": "Vercel",
+    "neon-postgres": "Neon",
+    "notion": "Notion",
+    "pages": "Pages",
+    "supabase": "Supabase",
+    "work-pets": "Work Pets",
+    "checkly": "Checkly",
+    "github": "GitHub",
+    "gmail": "Gmail",
+    "google-drive": "Google Drive",
+    "pdf": "PDF",
+    "documents": "Documents",
+    "presentations": "Presentations",
+    "spreadsheets": "Spreadsheets",
+    "template-creator": "Template Creator",
+    "openai-templates": "OpenAI Templates",
+    "plugin-management": "Plugin Management",
+    "sites": "Sites",
+    "sentry": "Sentry",
+    "visualize": "Visualize",
+    "app-69c28d6aedac81919502a88c2179e20c": "Chess"
+  },
+  "compact_sections": [
+    {
+      "id": "hyperframes",
+      "label": "HyperFrames toolkit",
+      "description": "Supporting tools",
+      "prefixes": [
+        "hyperframes"
+      ],
+      "sources": [
+        "Mine"
+      ]
+    }
+  ],
+  "display": {
+    "names": {
+      "seo": "SEO",
+      "ahref": "Ahrefs audit",
+      "pdf": "PDF",
+      "rappi": "Rappi",
+      "youtube-upload": "YouTube upload",
+      "hyperframes": "HyperFrames",
+      "media-use": "Media tools",
+      "producthunt": "Product Hunt",
+      "tiktok-metrics": "Social metrics"
+    },
+    "summaries": {
+      "product-definition": "Research the market, find your positioning, and define the first version.",
+      "product-setup": "Prepare the repository, app foundation, and services your product needs.",
+      "product-design": "Design the landing page and key screens before building.",
+      "product-build": "Build and verify the core product experience.",
+      "explore-design": "Compare visual directions and implement the one you choose.",
+      "google-oauth-integration": "Add or repair Google sign-in and verify the full login flow.",
+      "youtube-upload": "Upload your finished video with its thumbnail, details, and publication settings.",
+      "media-use": "Find or create footage, images, voices, music, and sound effects.",
+      "compress-video": "Make video files smaller while preserving visible quality.",
+      "create-demo": "Record a clear walkthrough of real product interactions.",
+      "faceless-explainer": "Turn a topic or article into a video with graphics, narration, and captions.",
+      "marketing-motion-ad": "Create a short animated ad from your real product and landing page.",
+      "talking-head-reel": "Turn a portrait recording into a tight reel with captions and graphic overlays.",
+      "article-card-animation": "Animate an article illustration into desktop and mobile video cards.",
+      "character-story-ad": "Make a short story video with consistent characters, dialogue, and captions.",
+      "viral-format-research": "Research successful video formats and adapt them to your topic."
+    }
+  }
+}
