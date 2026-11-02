@@ -125,7 +125,9 @@ Recorded usage is best effort, enabled through the optional instruction block ra
 
 ## Publish releases
 
-Update `VERSION`, run local tests and browser verification, then publish a matching `vMAJOR.MINOR.PATCH` tag only when authorized. GitHub Actions runs the tests on macOS and Windows and publishes the allowlisted `skill-dashboard.zip` plus the bootstrap scripts. `python3 scripts/package.py` packages locally. Runtime, catalogs, logs, installed skills and unrelated checkout files are excluded.
+Every authorized push to `main` runs tests on macOS and Windows, then automatically publishes a stable GitHub release with the allowlisted `skill-dashboard.zip` and bootstrap scripts. Installed users can get it through **Settings → Check now**; automatic updates check daily. A failed test gate prevents publication. Pull requests only test and package; they never publish.
+
+The workflow assigns the next patch version from existing stable tags, using tracked `VERSION` as a minimum. It writes that version into the release archive without making a version-bump commit. You can raise `VERSION` explicitly for a minor or major release. Branch/tag events and reruns for the same tagged commit reuse its version and leave an existing release unchanged. Release jobs are serialized to avoid version collisions. For an explicitly authorized manual release, push a `vMAJOR.MINOR.PATCH` tag matching `VERSION`. `python3 scripts/package.py` packages locally. Runtime, catalogs, logs, installed skills and unrelated checkout files are excluded.
 
 Before making a private repository public, review tracked files and history for secrets and unintended personal files. The code change does not itself authorize a push, release, repository visibility change or history rewrite.
 

@@ -22,21 +22,33 @@ jobs:
       - run: python scripts/package.py
   release:
     needs: test
-    if: startsWith(github.ref, 'refs/tags/v')
+    if: github.event_name != 'pull_request' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/v'))
+    concurrency:
+      group: stable-release
+      cancel-in-progress: false
     runs-on: ubuntu-latest
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - name: Check release version
-        env:
-          RELEASE_TAG: ${{ github.ref_name }}
-        run: python -c "import os,pathlib; assert os.environ['RELEASE_TAG'] == 'v'+pathlib.Path('VERSION').read_text().strip()"
+      - name: Select release version
+        id: version
+        run: python scripts/release_version.py
       - run: python scripts/package.py
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "$GITHUB_REF_NAME" release-dist/skill-dashboard.zip install.sh install.ps1 --generate-notes
+          RELEASE_TAG: ${{ steps.version.outputs.tag }}
+          RELEASE_SHA: ${{ github.sha }}
+        run: |
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            echo "Release $RELEASE_TAG already exists; leaving it unchanged."
+          else
+            gh release create "$RELEASE_TAG" release-dist/skill-dashboard.zip install.sh install.ps1 \
+              --target "$RELEASE_SHA" --generate-notes --latest
+          fi
