@@ -10,12 +10,13 @@ import shutil
 import threading
 import sys
 import socket
+import socketserver
 import storage
 import updates
 from portable import linked, recycle_windows
 from usage import read_usage
 from pathlib import Path
-from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer as HTTPThreadingServer
 
 BASE = Path(__file__).resolve().parent
 CODEX = Path(os.environ.get('CODEX_HOME', str(Path.home() / '.codex')))
@@ -24,6 +25,15 @@ DELETE_LOCK = threading.RLock()
 DATA_DIR = storage.data_home()
 MANAGED = False
 ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CODEX / 'plugins/cache', 'Plugin cache')]
+
+class ThreadingHTTPServer(HTTPThreadingServer):
+    def server_bind(self):
+        # This server is loopback-only: reverse DNS adds no useful information and
+        # can delay startup for tens of seconds on machines without a PTR response.
+        socketserver.TCPServer.server_bind(self)
+        self.server_name = 'localhost'
+        self.server_port = self.server_address[1]
+
 
 def metadata(raw, fallback):
     values = {}

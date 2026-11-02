@@ -156,6 +156,15 @@ class HttpTests(IsolatedState):
                                          headers=defaults if headers is None else headers)
         with urllib.request.urlopen(request) as response: return json.load(response)
 
+    def test_loopback_startup_does_not_resolve_dns(self):
+        with patch('socket.getfqdn', side_effect=AssertionError('Unexpected DNS lookup')):
+            http = server.ThreadingHTTPServer(('127.0.0.1', 0), server.Handler)
+            try:
+                self.assertEqual(http.server_name, 'localhost')
+                self.assertGreater(http.server_port, 0)
+            finally:
+                http.server_close()
+
     def test_snapshot_health_and_private_files(self):
         snapshot = self.request('/api/skills')
         self.assertEqual(snapshot['skills'][0]['groups'], ['writing'])

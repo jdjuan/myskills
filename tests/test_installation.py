@@ -15,6 +15,8 @@ import services
 import storage
 import updates
 
+BASE_VERSION = (dashboard.HERE / "VERSION").read_text().strip()
+
 
 class InstallationTests(unittest.TestCase):
     def setUp(self):
@@ -29,7 +31,7 @@ class InstallationTests(unittest.TestCase):
         self.assertEqual(json.loads(result)['version'], (dashboard.HERE / 'VERSION').read_text().strip())
         original = storage.catalog(self.data); original['groups'] = [{'id': 'own', 'label': 'Own', 'section': 'Own', 'skills': []}]
         storage.atomic_json(self.data / 'catalog.json', original)
-        with patch.object(updates, 'latest_release', return_value=('0.1.0', 'unused')):
+        with patch.object(updates, 'latest_release', return_value=(BASE_VERSION, 'unused')):
             dashboard.install(self.home, start=False)
         self.assertEqual(storage.catalog(self.data)['groups'][0]['id'], 'own')
 
@@ -129,7 +131,8 @@ class SupervisorTests(unittest.TestCase):
     def test_release_switch_restart_and_catalog_survival(self):
         """A real child server updates from a local release fixture, never GitHub."""
         import contextlib
-        from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+        from http.server import SimpleHTTPRequestHandler
+        from server import ThreadingHTTPServer
         import functools
         import signal
         import socket
@@ -174,20 +177,20 @@ class SupervisorTests(unittest.TestCase):
                         try:
                             with urllib.request.urlopen(state['url'] + '/api/health', timeout=1) as response:
                                 health = json.load(response)
-                            if health['pid'] == state['pid'] and (version == '0.1.0' or state['pid'] != last_pid):
+                            if health['pid'] == state['pid'] and (version == BASE_VERSION or state['pid'] != last_pid):
                                 last_pid = state['pid']
                                 return state
                         except OSError: pass
                     time.sleep(.1)
                 raise AssertionError('Supervisor did not serve version ' + version)
             try:
-                first = wait_for('0.1.0')
+                first = wait_for(BASE_VERSION)
                 self.assertNotEqual(int(first['url'].rsplit(':', 1)[1]), occupied.getsockname()[1])
                 storage.atomic_json(home / 'data/update-request.json', {'requestedAt': updates.now()})
                 second = wait_for('0.2.0')
                 self.assertNotEqual(first['pid'], second['pid'])
                 self.assertEqual(storage.catalog(home / 'data'), original)
-                self.assertEqual(storage.read_json(home / 'current.json')['previous'], '0.1.0')
+                self.assertEqual(storage.read_json(home / 'current.json')['previous'], BASE_VERSION)
                 self.assertFalse((home / 'data/update-request.json').exists())
             finally:
                 process.terminate()
