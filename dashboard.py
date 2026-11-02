@@ -32,7 +32,7 @@ def python_executable(home):
     return (Path(home) / 'python-path.txt').read_text(encoding='utf-8').strip()
 
 
-def install(home, source=None, migrate=None, start=True, open_browser=True):
+def install(home, source=None, migrate=None, start=True, open_browser=True, shortcut=True):
     home = Path(home).resolve()
     directory = home / 'data'
     directory.mkdir(parents=True, exist_ok=True)
@@ -67,6 +67,14 @@ def install(home, source=None, migrate=None, start=True, open_browser=True):
     (home / 'python-path.txt').write_text(sys.executable, encoding='utf-8')
     if not (directory / 'catalog.json').exists():
         storage.atomic_json(directory / 'catalog.json', storage.read_json(home / 'releases' / version / 'catalog.json'))
+    if not shortcut:
+        services.save_shortcut_choice(home, False, directory)
+    elif settings.get('launcherEnabled', True):
+        try:
+            services.configure_shortcut(home, True, directory)
+        except (OSError, ValueError, subprocess.SubprocessError) as error:
+            # A launcher is convenience; a naming conflict must not break installation.
+            print(f'Skills launcher was not changed: {error}', file=sys.stderr)
     if start:
         if migrate:
             services.remove_legacy(migrate)
@@ -193,6 +201,8 @@ def usage_instruction(home):
 def uninstall(home, remove_data=False):
     home = Path(home)
     directory = home / 'data'
+    if services.shortcut_status(home)['installed']:
+        services.set_shortcut(home, False)
     services.stop(remove=True)
     for _ in range(50):
         if not (directory / 'supervisor.json').exists():
@@ -205,7 +215,7 @@ def uninstall(home, remove_data=False):
         script = ("$ErrorActionPreference='Stop'; "
                   f"$h=[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('{encoded_home}')); "
                   f"Wait-Process -Id {os.getpid()} -ErrorAction SilentlyContinue; "
-                  "$items=@('releases','runtime','uv','logs','current.json','launcher.py','python-path.txt'); "
+                  "$items=@('releases','runtime','uv','tools','logs','current.json','launcher.py','python-path.txt'); "
                   + ("$items+=@('data'); " if remove_data else '') +
                   "foreach($item in $items){$p=Join-Path $h $item; if(Test-Path -LiteralPath $p){Remove-Item -LiteralPath $p -Recurse -Force}}")
         encoded_script = base64.b64encode(script.encode('utf-16le')).decode()
@@ -214,7 +224,7 @@ def uninstall(home, remove_data=False):
                          stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
                          cwd=str(home.parent))
     else:
-        for name in ('releases', 'runtime', 'uv', 'logs'):
+        for name in ('releases', 'runtime', 'uv', 'tools', 'logs'):
             if (home / name).exists():
                 shutil.rmtree(home / name)
         for name in ('current.json', 'launcher.py', 'python-path.txt'):
@@ -235,13 +245,14 @@ def main():
     parser.add_argument('--migrate-checkout', type=Path)
     parser.add_argument('--no-start', action='store_true')
     parser.add_argument('--no-open', action='store_true')
+    parser.add_argument('--no-shortcut', action='store_true')
     parser.add_argument('--remove-data', action='store_true')
     args = parser.parse_args()
     home = args.home.expanduser().resolve()
     os.environ['SKILL_DASHBOARD_HOME'] = str(home)
     directory = home / 'data'
     if args.action == 'install':
-        install(home, args.source, args.migrate_checkout, not args.no_start, not args.no_open)
+        install(home, args.source, args.migrate_checkout, not args.no_start, not args.no_open, not args.no_shortcut)
     elif args.action == 'supervise':
         supervise(home)
     elif args.action == 'start':

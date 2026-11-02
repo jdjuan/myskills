@@ -1,4 +1,4 @@
-param([switch]$NoOpen, [switch]$NoStart)
+param([switch]$NoOpen, [switch]$NoStart, [switch]$NoShortcut)
 $ErrorActionPreference = 'Stop'
 $DashboardHome = if ($env:SKILL_DASHBOARD_HOME) { $env:SKILL_DASHBOARD_HOME } else { Join-Path $env:LOCALAPPDATA 'SkillDashboard' }
 $env:SKILL_DASHBOARD_HOME = $DashboardHome
@@ -20,6 +20,7 @@ try {
     $Arguments = @((Join-Path $Work 'app\dashboard.py'), 'install', '--home', $DashboardHome)
     if ($NoOpen) { $Arguments += '--no-open' }
     if ($NoStart) { $Arguments += '--no-start' }
+    if ($NoShortcut) { $Arguments += '--no-shortcut' }
     & $Python @Arguments
     if ($LASTEXITCODE -ne 0) { throw 'Dashboard installation did not complete.' }
 } finally { Remove-Item -Recurse -Force $Work }

@@ -175,7 +175,7 @@ class HttpTests(IsolatedState):
             self.assertEqual(error.exception.code, 404); error.exception.close()
 
     def test_mutations_require_origin_and_token(self):
-        for path in ['/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update']:
+        for path in ['/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup']:
             for headers in [{'Origin': 'https://example.com', 'X-Library-Token': server.TOKEN}, {'Origin': self.url}]:
                 with self.assertRaises(urllib.error.HTTPError) as error: self.request(path, {}, headers)
                 self.assertEqual(error.exception.code, 403); error.exception.close()
@@ -187,6 +187,22 @@ class HttpTests(IsolatedState):
         self.assertEqual(self.request('/api/catalog')['catalog']['groups'][0]['label'], 'New name')
         with self.assertRaises(urllib.error.HTTPError) as error: self.request('/api/catalog', value)
         self.assertEqual(error.exception.code, 409); error.exception.close()
+
+    def test_backup_endpoint_queues_only_explicit_actions(self):
+        from unittest.mock import Mock
+        backup = Mock()
+        backup.submit.return_value = {'message': 'Started'}
+        with patch.object(server, 'BACKUP', backup):
+            self.assertEqual(self.request('/api/backup', {'action': 'backup'})['message'], 'Started')
+            backup.submit.assert_called_once_with('backup', {'action': 'backup'})
+
+    def test_launcher_endpoint_is_managed_and_token_protected(self):
+        with self.assertRaises(urllib.error.HTTPError) as error:
+            self.request('/api/launcher', {'enabled': True})
+        self.assertEqual(error.exception.code, 400); error.exception.close()
+        with patch.object(server, 'MANAGED', True), patch.object(server.services, 'configure_shortcut', return_value={'installed': True}) as configure:
+            self.assertTrue(self.request('/api/launcher', {'enabled': True})['installed'])
+            configure.assert_called_once_with(storage.install_home(), True, self.data)
 
     def test_settings_persist_and_preserve_internal_fields(self):
         storage.atomic_json(self.data / 'settings.json', {'port': 9000, 'codexHome': 'example'})

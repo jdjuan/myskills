@@ -1,6 +1,6 @@
 # Skill Dashboard
 
-A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, account, AI API key, database or hosting service.
+A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, AI API key, database or hosting service. The dashboard needs no account; optional GitHub backup uses your own GitHub account.
 
 ## Install with Codex
 
@@ -52,6 +52,21 @@ The version-1 catalog contains `groups` (ordered `{id,label,section,skills}` obj
 
 Skill roots: `${CODEX_HOME:-~/.codex}/skills`, `~/.agents/skills`, and `${CODEX_HOME:-~/.codex}/plugins/cache`. Plugin caches do not prove a plugin is enabled. Project-local skills outside these roots are not enumerated. Installed skills and plugin caches are never bundled with the application.
 
+## GitHub backup and restore
+
+Open **Settings → Manage GitHub backup**. No backup is uploaded until you enable it.
+
+1. Click **Connect GitHub**. The dashboard reuses an existing GitHub CLI login or downloads the official portable CLI into its own tools folder. If sign-in is needed, it shows the temporary device code and a link to GitHub. Authentication belongs to GitHub CLI; the dashboard does not implement OAuth or store its own access token. If setup fails, open **Need help connecting?** and use **Copy setup prompt for Codex** for installation and sign-in guidance.
+2. Choose a repository name, initially `codex-skills-backup`, and click **Enable backup and upload skills**. This creates a private repository in the signed-in account, or verifies an existing dashboard backup. Public repositories and unrelated existing repositories are refused.
+3. Use **Back up now**, or enable **Back up automatically every day**. Daily backup runs while the local dashboard server is running, including when the browser is closed. The panel shows progress, errors, the repository link and the last successful backup time. Unchanged files do not create extra commits.
+4. To recover on this or another computer, connect the same GitHub account, enter the repository name and click **Preview restore**. Review the files that differ. Restore fills missing files and keeps existing conflicts unless the replacement checkbox is selected. Replaced files are retained under the local data folder's `restore-history` directory. Changes made after a preview require another preview.
+
+Backups include regular files in personal skill folders under the two discovered personal roots, their supporting scripts/assets, and the personal catalog. Linked personal skill folders are copied as portable regular folders; nested linked files/directories and links into built-in or plugin-cache locations are excluded. Backups also exclude built-in skills, plugin caches, usage logs, environment files, common credential/key files and dependency caches. Restore leaves existing linked destinations unchanged. Codex account configuration and dashboard runtime settings are outside the snapshot. Individual files are limited to 20 MB and snapshots to 100 MB; oversized snapshots fail without replacing the previous backup.
+
+Backup files remain readable in the private repository with Git history. Each backup represents this computer's current snapshot; use distinct repository names for computers that should retain separate current snapshots. Restore is additive and never runs skill scripts. This is backup, not automatic cross-computer synchronization.
+
+GitHub operations use the CLI's Git Data API, so a separate Git installation is unnecessary. Backup preferences and status stay in the personal data folder as `github-backup.json` and `github-backup-status.json`. Failed requests show GitHub's error message and record the timestamp, API endpoint, method and HTTP status in `github-backup-errors.jsonl` in that folder; request payloads and authentication headers are never logged. Credentials stay under GitHub CLI's own authentication management. There is no ZIP export or ZIP restore option.
+
 ## Background service and updates
 
 The service starts at login, restarts after exits and runs while the user is logged in and the computer is awake. It uses launchd (`io.skilldashboard.server`) on macOS and an interactive-user Scheduled Task (`SkillDashboard`) on Windows. It does not run as administrator or open a console window. macOS registration lives in `~/Library/LaunchAgents/io.skilldashboard.server.plist`.
@@ -59,6 +74,14 @@ The service starts at login, restarts after exits and runs while the user is log
 The dashboard binds only to loopback. Port 8765 is preferred; if occupied, it chooses and remembers an available port. Use the launcher to open the correct address. Host/origin/token checks protect mutations; application source, personal state files and credentials are not served as files. Deletion is recoverable, and system skills and linked/reparse-point locations are protected.
 
 Automatic updates are on by default. The supervisor checks stable GitHub releases on startup and every 24 hours. It downloads the new application, switches versions and restarts the dashboard. It never pulls development code, regenerates your catalog, installs skills or runs a test/validation pipeline on your computer. Interrupted downloads leave the current installation intact. Settings includes the version, last update check, errors, automatic-update toggle and manual check button. One previous release is retained for manual rollback. No custom update server is needed.
+
+### Open Skills from app search
+
+New installations create a **Skills** launcher automatically: on macOS, press Command-Space and search for Skills; on Windows, search for Skills in the Start menu. The launcher calls the stable dashboard command and resolves the current runtime and local address, so it survives updates and port changes. Spotlight indexing may take a moment; installation requests indexing without opening Spotlight.
+
+Existing installations can use **Settings → Add Spotlight launcher** (macOS) or **Add Start menu shortcut** (Windows). Settings also removes a dashboard-owned launcher. That choice is preserved across reinstalls and application updates. A different app or shortcut named Skills is left untouched, with an explanation in Settings. Uninstallation removes only this installation's own launcher.
+
+To skip launcher creation during installation, use `--no-shortcut` with the macOS installer or `-NoShortcut` with the Windows installer. No personal Shortcut skill is needed.
 
 ### Manage an installation
 
@@ -93,7 +116,7 @@ The frontend is buildless and Python uses only its standard library. Development
 For a local managed installation using an existing runtime:
 
 ```sh
-python3 dashboard.py install --source . --home "/absolute/test installation" --no-start
+python3 dashboard.py install --source . --home "/absolute/test installation" --no-start --no-shortcut
 ```
 
 Use a separate test home and temporary skill roots when exercising deletion. To migrate an old checkout installation, add `--migrate-checkout /absolute/old/checkout` to `dashboard.py install`. It copies an existing legacy catalog only if personal state is absent, backs it up, and replaces the matching legacy login service when startup is requested. It never overwrites or deletes the source checkout. `manage-service.py` remains the legacy checkout-service helper.
@@ -109,3 +132,13 @@ Before making a private repository public, review tracked files and history for 
 ### Local verification (2026-11-02)
 
 All 30 tests passed on macOS with both the development Python and the privately provisioned Python 3.12 runtime. Verification exercised a managed launchd installation, server recovery, port fallback, a running release switch from a local download fixture, catalog survival, and browser organization editing at desktop and narrow widths, including concurrent-edit recovery. Native Windows installation, Scheduled Task execution and Recycle Bin behavior still require verification on Windows; the macOS/Windows CI workflow is prepared but has not been run remotely. Public bootstrap installation and GitHub release delivery require the separately authorized first publication.
+
+### Launcher verification (2026-11-02)
+
+The launcher change was verified with 40 tests on macOS (39 passed; the native Windows shortcut test is skipped on macOS). Local browser checks exercised adding and removing a disposable Spotlight launcher and persistence after refresh. Its manifest, executable shell syntax and stable launcher command were checked. The existing user-created Skills app was left unchanged. This requests Spotlight registration/indexing; it does not claim a particular search ranking. Native Windows shortcut verification remains for Windows CI.
+
+### GitHub backup verification (2026-11-02)
+
+Verification uses disposable fixture skills and a simulated GitHub API for repository creation, private-only writes, unchanged backups, upload failures, restoration to a different root, conflict preservation, replacement recovery, daily scheduling, traversal rejection and expired/local-edit previews. The official portable GitHub CLI was downloaded and executed successfully in a temporary folder. After the owner enabled personal backups, a real private-repository backup also completed successfully; a read-back verified its commit, file count, catalog and manifest.
+
+The completed local suite contains 67 tests (66 passed; one native Windows shortcut test is skipped on macOS), including safe API-error diagnostics and logging-failure handling. Browser checks covered connection/setup with a disposable simulated account, backup, daily preferences, restore previews, keeping conflicts and replacing conflicts with recovery copies.

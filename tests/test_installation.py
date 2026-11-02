@@ -26,13 +26,13 @@ class InstallationTests(unittest.TestCase):
         self.data = self.home / 'data'
 
     def test_local_install_launcher_and_repeat_release_install(self):
-        dashboard.install(self.home, source=dashboard.HERE, start=False)
+        dashboard.install(self.home, source=dashboard.HERE, start=False, shortcut=False)
         result = subprocess.check_output([sys.executable, str(self.home / 'launcher.py'), 'status'], text=True)
         self.assertEqual(json.loads(result)['version'], (dashboard.HERE / 'VERSION').read_text().strip())
         original = storage.catalog(self.data); original['groups'] = [{'id': 'own', 'label': 'Own', 'section': 'Own', 'skills': []}]
         storage.atomic_json(self.data / 'catalog.json', original)
         with patch.object(updates, 'latest_release', return_value=(BASE_VERSION, 'unused')):
-            dashboard.install(self.home, start=False)
+            dashboard.install(self.home, start=False, shortcut=False)
         self.assertEqual(storage.catalog(self.data)['groups'][0]['id'], 'own')
 
     def test_migration_copies_original_without_modifying_it(self):
@@ -40,7 +40,7 @@ class InstallationTests(unittest.TestCase):
         original = storage.read_json(dashboard.HERE / 'catalog.json')
         original['groups'] = [{'id': 'mine', 'label': 'Mine', 'section': 'Mine', 'skills': []}]
         storage.atomic_json(checkout / 'catalog.json', original)
-        dashboard.install(self.home, source=dashboard.HERE, migrate=checkout, start=False)
+        dashboard.install(self.home, source=dashboard.HERE, migrate=checkout, start=False, shortcut=False)
         self.assertEqual(storage.catalog(self.data), original)
         self.assertEqual(storage.read_json(checkout / 'catalog.json'), original)
         self.assertTrue((self.data / 'catalog.before-migration.json').exists())
@@ -141,7 +141,7 @@ class SupervisorTests(unittest.TestCase):
         import urllib.request
         with tempfile.TemporaryDirectory(prefix='dashboard lifecycle ') as temporary:
             home = Path(temporary).resolve() / 'installation'
-            dashboard.install(home, source=dashboard.HERE, start=False)
+            dashboard.install(home, source=dashboard.HERE, start=False, shortcut=False)
             original = storage.catalog(home / 'data')
             original['groups'] = [{'id': 'custom', 'label': 'Custom', 'section': 'Personal', 'skills': ['fixture']}]
             storage.atomic_json(home / 'data/catalog.json', original)
@@ -205,7 +205,7 @@ class RemovalTests(unittest.TestCase):
     def test_uninstall_retains_personal_data_and_external_skills(self):
         with tempfile.TemporaryDirectory() as temporary:
             home = Path(temporary) / 'installation'
-            dashboard.install(home, source=dashboard.HERE, start=False)
+            dashboard.install(home, source=dashboard.HERE, start=False, shortcut=False)
             skill = Path(temporary) / 'skills/example/SKILL.md'
             skill.parent.mkdir(parents=True); skill.write_text('untouched')
             original = storage.catalog(home / 'data')

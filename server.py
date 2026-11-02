@@ -11,8 +11,10 @@ import threading
 import sys
 import socket
 import socketserver
+import subprocess
 import storage
 import updates
+import services
 from portable import linked, recycle_windows
 from usage import read_usage
 from pathlib import Path
@@ -24,6 +26,7 @@ TOKEN = secrets.token_urlsafe(32)
 DELETE_LOCK = threading.RLock()
 DATA_DIR = storage.data_home()
 MANAGED = False
+BACKUP = None
 ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CODEX / 'plugins/cache', 'Plugin cache')]
 
 class ThreadingHTTPServer(HTTPThreadingServer):
@@ -287,7 +290,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update'):
+        if self.path not in ('/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -299,6 +302,15 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == '/api/catalog':
                 storage.save_catalog(payload.get('catalog'), payload.get('revision'), DATA_DIR)
                 return self.json_response({'message': 'Organization saved.'})
+            if self.path == '/api/backup':
+                if BACKUP is None:
+                    raise ValueError('GitHub backup is unavailable in this server instance.')
+                return self.json_response(BACKUP.submit(payload.get('action'), payload))
+            if self.path == '/api/launcher':
+                if not MANAGED:
+                    raise ValueError('Install the dashboard before adding its search launcher.')
+                state = services.configure_shortcut(storage.install_home(), payload.get('enabled'), DATA_DIR)
+                return self.json_response(state)
             if self.path == '/api/settings':
                 return self.json_response(updates.set_preferences(payload, DATA_DIR))
             if self.path == '/api/update':
@@ -315,7 +327,7 @@ class Handler(BaseHTTPRequestHandler):
                 self.json_response(trash_skill(payload['id']))
         except storage.ConflictError as error:
             self.json_response({'error': str(error)}, 409)
-        except (ValueError, OSError) as error:
+        except (ValueError, OSError, subprocess.SubprocessError) as error:
             self.json_response({'error': str(error)}, 400)
 
     def do_GET(self):
@@ -323,6 +335,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(403)
             return
         route = self.path.split('?')[0]
+        if route == '/api/backup':
+            return self.json_response(BACKUP.status() if BACKUP else {'available': False, 'busy': False, 'message': 'GitHub backup is unavailable.'})
         if route == '/api/health':
             return self.json_response({'application': 'skill-dashboard', 'pid': os.getpid()})
         if route == '/api/catalog':
@@ -331,6 +345,7 @@ class Handler(BaseHTTPRequestHandler):
         if route == '/api/settings':
             state = updates.status(DATA_DIR)
             state['managed'] = MANAGED
+            state['launcher'] = services.shortcut_status(storage.install_home()) if MANAGED else {'supported': False, 'installed': False, 'conflict': False, 'label': 'Search launcher'}
             if not MANAGED:
                 state['version'] = 'development'
             return self.json_response(state)
@@ -376,10 +391,13 @@ if __name__ == '__main__':
     url = f'http://127.0.0.1:{server.server_port}'
     if args.managed:
         storage.atomic_json(DATA_DIR / 'server.json', {'url': url, 'pid': os.getpid()})
+    BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills')])
+    BACKUP.start_scheduler()
     print(f'Skill dashboard: {url}', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
         pass
     finally:
+        BACKUP.stop_event.set()
         server.server_close()
