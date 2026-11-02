@@ -4,3 +4,7 @@ __pycache__/
 .codegraph/
 .coverage
 .env
+usage.jsonl
+.personal/
+release-dist/
+.playwright-cli/
