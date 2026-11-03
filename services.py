@@ -152,7 +152,12 @@ def _windows_shortcut(home, path, write=False):
         script += (f"$s.TargetPath={_ps_text(executable)}; $s.Arguments={_ps_text(args)}; "
                    f"$s.WorkingDirectory={_ps_text(home)}; $s.Description={_ps_text(description)}; "
                    '$s.Save(); ')
-    script += '@{target=$s.TargetPath;arguments=$s.Arguments;description=$s.Description}|ConvertTo-Json -Compress'
+    # WScript.Shell reads Arguments through a fixed-size buffer and can truncate
+    # the encoded launcher command. The Shell property store returns the full value.
+    script += ("$folder=(New-Object -ComObject Shell.Application).Namespace((Split-Path -LiteralPath $p)); "
+               "$item=$folder.ParseName((Split-Path -Leaf $p)); "
+               "$arguments=$item.ExtendedProperty('System.Link.Arguments'); "
+               '@{target=$s.TargetPath;arguments=$arguments;description=$s.Description}|ConvertTo-Json -Compress')
     actual = json.loads(_powershell(script).lstrip('\ufeff'))
     return (os.path.normcase(actual['target']) == os.path.normcase(executable) and
             actual['arguments'] == args and actual['description'] == description)
