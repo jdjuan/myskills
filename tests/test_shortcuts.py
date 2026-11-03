@@ -83,8 +83,15 @@ class ShortcutTests(unittest.TestCase):
     @unittest.skipUnless(os.name == 'nt', 'Native Windows .lnk test')
     def test_native_windows_link_uses_stable_home_and_removes_cleanly(self):
         target = self.home.parent / 'Start Menu/Skills.lnk'
-        state = services.set_shortcut(self.home, True, target)
-        self.assertTrue(state['installed'])
+        replies = []
+        powershell = services._powershell
+        def capture(script):
+            result = powershell(script)
+            replies.append(json.loads(result.lstrip('\ufeff')))
+            return result
+        with patch.object(services, '_powershell', side_effect=capture):
+            state = services.set_shortcut(self.home, True, target)
+        self.assertTrue(state['installed'], {'state': state, 'shortcutProperties': replies})
         (self.home / 'python-path.txt').write_text('C:\\new runtime\\python.exe')
         self.assertTrue(services.shortcut_status(self.home, target)['installed'])
         services.set_shortcut(self.home, False, target)
