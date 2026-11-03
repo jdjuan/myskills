@@ -95,8 +95,9 @@ class ShortcutTests(unittest.TestCase):
             "import json, pathlib, sys\n"
             "pathlib.Path('launch-result.json').write_text(json.dumps(sys.argv[1:]))\n",
             encoding='utf-8')
-        subprocess.run(['powershell', *services._windows_shortcut_arguments().split()],
-                       cwd=home, timeout=30, check=True, capture_output=True)
+        completed = subprocess.run(['powershell', *services._windows_shortcut_arguments().split()],
+                                   cwd=home, timeout=30, capture_output=True, text=True, errors='replace')
+        self.assertEqual(completed.returncode, 0, completed.stderr)
         result = home / 'launch-result.json'
         deadline = time.monotonic() + 10
         while not result.exists() and time.monotonic() < deadline:
