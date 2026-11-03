@@ -19,6 +19,7 @@ aside{width:285px;padding:25px 17px 16px}main{margin-left:285px;padding:30px 36p
 
 .editor-body{padding:24px;max-height:72vh;overflow:auto}.editor-body h3{margin:8px 0 16px}.editor-row{display:flex;gap:8px;align-items:center;padding:10px 0;border-bottom:1px solid var(--border)}.editor-row input,.editor-row select,.editor-body>input{font:inherit;border:1px solid #dce3ed;border-radius:6px;padding:8px;min-width:0}.editor-row input{width:35%}.editor-row .grow{flex:1;min-width:80px}.editor-row button{padding:7px;border:1px solid #e0e5ef;border-radius:6px;font-size:12px}.editor-row select{max-width:200px}.editor-error{color:#a63042}.editor-note{font-size:13px;color:#687b96;line-height:1.7}.editor-label{display:block;font-size:13px;margin:14px 0}.editor-label input{margin-right:8px}.editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}#organizeDialog,#settingsDialog,#backupDialog{width:min(850px,95vw)}.editor-row .skill-title{font-size:13px;flex:1;overflow-wrap:anywhere}.editor-heading{font-size:12px;color:#65738a;margin:22px 0 0}.empty{grid-column:1/-1}dialog input:focus-visible,dialog select:focus-visible{outline:3px solid #9bb0ff;outline-offset:2px}@media(max-width:720px){.header-right{gap:5px}.header-right .local{display:none}.editor-row{flex-wrap:wrap}.editor-row input{width:40%}.editor-row select{max-width:140px}}
 
+.update-notice{padding:12px;border:1px solid var(--blue);border-radius:9px;background:var(--selected);color:var(--selected-ink)}
 /* System appearance: CSS updates immediately when the OS appearance changes. */
 :root{color-scheme:light dark;--page:#f6f7fa;--surface:#fff;--soft:#eef1f7;--ink:#25324a;--muted:#63718a;--border:#dfe5ee;--blue:#4d68d8;--selected:#eef1ff;--selected-ink:#4c64c6;--danger:#ad4050;--card-light:97%;--card-end:#fff;--icon-light:92%;--icon-ink:35%;--card-border:87%}
 @media(prefers-color-scheme:dark){:root{--page:#131720;--surface:#1c222e;--soft:#242d3c;--ink:#e4eaf5;--muted:#a3b0c5;--border:#344055;--blue:#a0b3ff;--selected:#2a3553;--selected-ink:#bdcaff;--danger:#ffa4ae;--card-light:16%;--card-end:#1c222e;--icon-light:26%;--icon-ink:78%;--card-border:29%}.appearance-icon .sun{display:none}.appearance-icon .moon{display:inline!important}dialog::backdrop{background:#060a14a6}.brandmark{background:#d9e3f6;color:#202c42}}
@@ -96,12 +97,29 @@ function render(){
  if(loaded&&!items.length&&!pluginOverview)grid.append(node('div','empty','There are no skills in this collection.'));
 }
 function show(s){selected=s;$('detailSource').textContent=sourceLabel(s)+' · '+s.name;$('detailName').textContent=nice(s);$('detailDescription').textContent=s.description;$('detailPath').textContent=s.path;$('content').textContent=s.content;$('usageSummary').textContent=usageLabel(s)+'. Logging began when enabled; earlier uses are unknown.';$('usageHistory').replaceChildren(...(s.usage?.recent||[]).map(timestamp=>node('li','',new Date(timestamp).toLocaleString())));$('detailDelete').hidden=!s.deletable;const old=$('detailPlacement');if(old)old.remove();if(s.source==='Mine'&&!s.plugin){const picker=categoryPicker(s);picker.id='detailPlacement';$('deleteNote').before(picker);}$('deleteNote').textContent=s.plugin?'Plugin updates may restore deleted cached skills.':'';$('detail').showModal()}
+let pendingUiUpdate=false;
+function reloadUpdatedUi(){
+ if(!pendingUiUpdate)return;
+ const protectedDialogs=['organizeDialog','backupDialog','deleteDialog'].map($).filter(dialog=>dialog.open);
+ if(protectedDialogs.length){
+  for(const dialog of protectedDialogs)if(!dialog.querySelector('.update-notice')){
+   const notice=node('p','editor-note update-notice','An update is ready. Finish or close this window to load the new version.');notice.setAttribute('role','status');
+   dialog.querySelector('.editor-body,.dialog-body').prepend(notice);
+  }
+  return;
+ }
+ location.reload();
+}
 async function load(quiet=false){
  if(loading)return false;loading=true;$('refresh').disabled=true;
  try{const response=await fetch('/api/skills',{cache:'no-store'});if(!response.ok)throw new Error();const data=await response.json();
- if(uiRevision&&data.uiRevision!==uiRevision){if(!document.querySelector('dialog[open]'))location.reload();return true}
+ // A restarted server also rotates the mutation token. Keep it fresh while a draft is open.
+ token=data.token;
+ if(uiRevision&&data.uiRevision!==uiRevision){pendingUiUpdate=true;reloadUpdatedUi();return true}
+ // Poll for updates in dialogs without rebuilding the library or disturbing active controls.
+ if(loaded&&(document.querySelector('dialog[open]')||document.activeElement?.matches('select')))return true;
  uiRevision=data.uiRevision;const next=JSON.stringify(data);if(next===snapshot)return true;snapshot=next;
- catalogRevision=data.catalogRevision;skills=data.skills;groups=data.groups;compactSections=data.compactSections||[];token=data.token;loaded=true;render();return true}
+ catalogRevision=data.catalogRevision;skills=data.skills;groups=data.groups;compactSections=data.compactSections||[];loaded=true;render();return true}
  catch(e){if(!quiet)notify('Could not load skills. Check the local server.');return false}
  finally{loading=false;$('refresh').disabled=false;$('organize').disabled=!loaded;$('settings').disabled=!loaded}
 }
@@ -156,5 +174,6 @@ $('manageBackup').onclick=async()=>{await refreshBackup();if(backupState.reposit
 $('closeBackup').onclick=()=>$('backupDialog').close();$('backupDialog').addEventListener('close',()=>{clearInterval(backupPoll);backupPoll=null});
 $('copyBackupSetup').onclick=async()=>{const prompt=$('backupSetupPrompt');try{await navigator.clipboard.writeText(prompt.textContent);$('backupSetupStatus').textContent='Copied. Paste this prompt into Codex.'}catch(e){prompt.focus();const selection=window.getSelection();selection.removeAllRanges();const range=document.createRange();range.selectNodeContents(prompt);selection.addRange(range);$('backupSetupStatus').textContent='Clipboard access is unavailable. The prompt is selected; press Command-C on Mac or Ctrl+C on Windows to copy it.'}};
 $('connectBackup').onclick=()=>backupAction('connect');$('enableBackup').onclick=()=>backupAction('enable',{name:$('backupRepo').value.trim()});$('backupNow').onclick=()=>backupAction('backup');$('dailyBackup').onchange=()=>backupAction('configure',{daily:$('dailyBackup').checked});$('previewRestore').onclick=()=>backupAction('preview',{name:$('backupRepo').value.trim()});$('confirmRestore').onclick=()=>backupAction('restore',{id:backupState.preview?.id,overwrite:$('overwriteRestore').checked});
-$('refresh').onclick=()=>load();setInterval(()=>{if(!document.hidden&&!document.querySelector('dialog[open]')&&!document.activeElement?.matches('select'))load(true)},3000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(true)});$('close').onclick=()=>$('detail').close();$('detailDelete').onclick=()=>askDelete(selected);$('cancelDelete').onclick=()=>$('deleteDialog').close();$('confirmDelete').onclick=deleteSelected;$('copyName').onclick=()=>copy($('copyName'),selected.name);$('copyContent').onclick=()=>copy($('copyContent'),selected.content);render();load();
+for(const dialog of document.querySelectorAll('dialog'))dialog.addEventListener('close',reloadUpdatedUi);
+$('refresh').onclick=()=>load();setInterval(()=>{if(!document.hidden)load(true)},3000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)load(true)});$('close').onclick=()=>$('detail').close();$('detailDelete').onclick=()=>askDelete(selected);$('cancelDelete').onclick=()=>$('deleteDialog').close();$('confirmDelete').onclick=deleteSelected;$('copyName').onclick=()=>copy($('copyName'),selected.name);$('copyContent').onclick=()=>copy($('copyContent'),selected.content);render();load();
 </script></body></html>
