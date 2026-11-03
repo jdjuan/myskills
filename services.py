@@ -133,18 +133,25 @@ def _ps_text(value):
     return "[Text.Encoding]::UTF8.GetString([Convert]::FromBase64String('" + base64.b64encode(str(value).encode()).decode() + "'))"
 
 
+def _windows_shortcut_arguments():
+    """Keep the encoded command below WScript.Shell's 1,023-character limit."""
+    import base64
+    # The shortcut's verified WorkingDirectory supplies the installation path.
+    # Embedding that path in an already encoded command can exceed the limit.
+    launch_script = ("$ErrorActionPreference='Stop'; $h=$PWD.Path; "
+                     "$py=(Get-Content -LiteralPath (Join-Path $h 'python-path.txt') -Raw -Encoding UTF8).Trim(); "
+                     "$gui=Join-Path (Split-Path $py) 'pythonw.exe'; if(Test-Path -LiteralPath $gui){$py=$gui}; "
+                     "& $py (Join-Path $h 'launcher.py') open --home $h")
+    encoded = base64.b64encode(launch_script.encode('utf-16le')).decode()
+    return subprocess.list2cmdline(['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-EncodedCommand', encoded])
+
+
 def _windows_shortcut(home, path, write=False):
     """Use Windows' native .lnk format without another Python dependency."""
     import json
     home = Path(home).resolve()
-    import base64
     executable = str(Path(os.environ.get('SystemRoot', 'C:/Windows')) / 'System32/WindowsPowerShell/v1.0/powershell.exe')
-    launch_script = ("$ErrorActionPreference='Stop'; "
-                     f"$h={_ps_text(home)}; $py=(Get-Content -LiteralPath (Join-Path $h 'python-path.txt') -Raw).Trim(); "
-                     "$gui=Join-Path (Split-Path $py) 'pythonw.exe'; if(Test-Path -LiteralPath $gui){$py=$gui}; "
-                     "& $py (Join-Path $h 'launcher.py') open --home $h")
-    encoded_launch = base64.b64encode(launch_script.encode('utf-16le')).decode()
-    args = subprocess.list2cmdline(['-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-EncodedCommand', encoded_launch])
+    args = _windows_shortcut_arguments()
     description = 'SkillDashboard:' + str(home)
     script = ("$ErrorActionPreference='Stop'; [Console]::OutputEncoding=[Text.Encoding]::UTF8; "
               f"$p={_ps_text(path)}; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($p); ")
@@ -152,15 +159,13 @@ def _windows_shortcut(home, path, write=False):
         script += (f"$s.TargetPath={_ps_text(executable)}; $s.Arguments={_ps_text(args)}; "
                    f"$s.WorkingDirectory={_ps_text(home)}; $s.Description={_ps_text(description)}; "
                    '$s.Save(); ')
-    # WScript.Shell reads Arguments through a fixed-size buffer and can truncate
-    # the encoded launcher command. The Shell property store returns the full value.
-    script += ("$folder=(New-Object -ComObject Shell.Application).Namespace((Split-Path -LiteralPath $p)); "
-               "$item=$folder.ParseName((Split-Path -Leaf $p)); "
-               "$arguments=$item.ExtendedProperty('System.Link.Arguments'); "
-               '@{target=$s.TargetPath;arguments=$arguments;description=$s.Description}|ConvertTo-Json -Compress')
+    script += ('@{target=$s.TargetPath;arguments=$s.Arguments;description=$s.Description;'
+               'workingDirectory=$s.WorkingDirectory}|ConvertTo-Json -Compress')
     actual = json.loads(_powershell(script).lstrip('\ufeff'))
     return (os.path.normcase(actual['target']) == os.path.normcase(executable) and
-            actual['arguments'] == args and actual['description'] == description)
+            actual['arguments'] == args and actual['description'] == description and
+            os.path.normcase(actual['workingDirectory']) == os.path.normcase(str(home)))
+
 
 
 def _mac_shortcut_script(home):

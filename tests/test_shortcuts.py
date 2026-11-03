@@ -4,6 +4,9 @@ import os
 from pathlib import Path
 import plistlib
 import tempfile
+import subprocess
+import sys
+import time
 import unittest
 from unittest.mock import patch
 
@@ -80,6 +83,27 @@ class ShortcutTests(unittest.TestCase):
             dashboard.install(self.home, source=dashboard.HERE, start=False)
         self.assertTrue((self.home / 'current.json').exists())
 
+    def test_windows_command_fits_shortcut_argument_limit(self):
+        self.assertLessEqual(len(services._windows_shortcut_arguments()), 1023)
+
+    @unittest.skipUnless(os.name == 'nt', 'Native Windows launcher execution')
+    def test_native_windows_command_launches_from_its_working_directory(self):
+        home = self.home / 'spaces [brackets] café'
+        home.mkdir()
+        (home / 'python-path.txt').write_text(sys.executable, encoding='utf-8')
+        (home / 'launcher.py').write_text(
+            "import json, pathlib, sys\n"
+            "pathlib.Path('launch-result.json').write_text(json.dumps(sys.argv[1:]))\n",
+            encoding='utf-8')
+        subprocess.run(['powershell', *services._windows_shortcut_arguments().split()],
+                       cwd=home, timeout=30, check=True, capture_output=True)
+        result = home / 'launch-result.json'
+        deadline = time.monotonic() + 10
+        while not result.exists() and time.monotonic() < deadline:
+            time.sleep(.1)
+        self.assertTrue(result.is_file(), 'The launcher must actually execute Python.')
+        self.assertEqual(json.loads(result.read_text()), ['open', '--home', str(home)])
+
     @unittest.skipUnless(os.name == 'nt', 'Native Windows .lnk test')
     def test_native_windows_link_uses_stable_home_and_removes_cleanly(self):
         target = self.home.parent / 'Start Menu/Skills.lnk'
@@ -94,5 +118,13 @@ class ShortcutTests(unittest.TestCase):
         self.assertTrue(state['installed'], {'state': state, 'shortcutProperties': replies})
         (self.home / 'python-path.txt').write_text('C:\\new runtime\\python.exe')
         self.assertTrue(services.shortcut_status(self.home, target)['installed'])
+        # Another working directory would execute a different launcher: refuse it.
+        services._powershell(f"$p={services._ps_text(target)}; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($p); "
+                             f"$s.WorkingDirectory={services._ps_text(self.home.parent)}; $s.Save()")
+        self.assertTrue(services.shortcut_status(self.home, target)['conflict'])
+        with self.assertRaises(ValueError):
+            services.set_shortcut(self.home, False, target)
+        services._powershell(f"$p={services._ps_text(target)}; $s=(New-Object -ComObject WScript.Shell).CreateShortcut($p); "
+                             f"$s.WorkingDirectory={services._ps_text(self.home)}; $s.Save()")
         services.set_shortcut(self.home, False, target)
         self.assertFalse(target.exists())
