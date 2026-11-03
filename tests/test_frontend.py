@@ -8,7 +8,7 @@ from pathlib import Path
 @unittest.skipUnless(shutil.which('node'), 'Node is optional for frontend behavior checks')
 class FrontendUpdateTests(unittest.TestCase):
     def test_update_reload_and_draft_protection(self):
-        html = (Path(__file__).resolve().parents[1] / 'dist/index.html').read_text()
+        html = (Path(__file__).resolve().parents[1] / 'dist/index.html').read_text(encoding='utf-8')
         code = html[html.index('let pendingUiUpdate=false;'):html.index('async function place(')]
         harness = r'''
 const assert=require('node:assert/strict');
@@ -52,5 +52,5 @@ let loading=false,loaded=true,uiRevision='old-ui',snapshot='',token='old-token',
 })().catch(error=>{console.error(error);process.exitCode=1});
 '''
         result = subprocess.run(['node'], input=harness + code + cases, text=True,
-                                capture_output=True, timeout=15)
+                                capture_output=True, encoding='utf-8', timeout=15)
         self.assertEqual(result.returncode, 0, result.stderr)

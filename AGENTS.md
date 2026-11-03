@@ -5,7 +5,7 @@
 - Keep Python standard-library-only and the frontend buildless.
 - Preserve loopback binding, origin/host/token checks, system protection, and recoverable Trash deletion.
 - Never commit installed skill contents, plugin caches, runtime tokens, machine-specific launchd files, or credentials.
-- Verify changes with `python3 -m unittest discover -s tests -v`. UI changes also need local browser verification.
+- Before pushing, run `python3 scripts/verify.py` (syntax, the full `python3 -m unittest discover -s tests -v` suite, and release ZIP validation). UI changes also need local browser verification. New or changed Windows-specific behavior must pass Windows CI on a non-publishing branch before merging to main. After an authorized final push, use a background release monitor to surface failures; do not describe a queued release as published.
 - Identify the existing checkout or managed service before restarting it after Python changes. Restart only the matching service; do not create a duplicate or replace a managed installation to test checkout code. HTML and catalog changes are picked up on refresh.
 
 - Skill folders are the source of truth for names, picker metadata, descriptions, icons, instructions, and size. Derive these at runtime; never duplicate them in this repository. Keep only dashboard-specific organization and presentation rules here.

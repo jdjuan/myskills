@@ -108,10 +108,10 @@ Requires Python 3.10+ for a development checkout (managed installations use Pyth
 
 ```sh
 python3 server.py
-python3 -m unittest discover -s tests -v
+python3 scripts/verify.py
 ```
 
-The frontend is buildless and Python uses only its standard library. Development checkouts never auto-update their code. `--data-dir /absolute/path` or `SKILL_DASHBOARD_DATA_DIR` isolates personal state; `--port 8766` selects a port explicitly. Refresh picks up frontend changes and new skill files.
+The frontend is buildless and Python uses only its standard library. Before pushing, run `python3 scripts/verify.py`: it checks application Python syntax, checks frontend JavaScript when Node is available, runs the full test suite, and builds and validates a temporary allowlisted release ZIP. CI runs the same command on macOS and Windows with Node available; local macOS success does not claim Windows verification. Development checkouts never auto-update their code. `--data-dir /absolute/path` or `SKILL_DASHBOARD_DATA_DIR` isolates personal state; `--port 8766` selects a port explicitly. Refresh picks up frontend changes and new skill files.
 
 For a local managed installation using an existing runtime:
 
