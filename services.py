@@ -138,7 +138,7 @@ def _windows_shortcut_arguments():
     import base64
     # The shortcut's verified WorkingDirectory supplies the installation path.
     # Embedding that path in an already encoded command can exceed the limit.
-    launch_script = ("$ErrorActionPreference='Stop'; $h=$PWD.Path; "
+    launch_script = ("$ErrorActionPreference='Stop'; $h=[Environment]::CurrentDirectory; Set-Location -LiteralPath $h; "
                      "$py=(Get-Content -LiteralPath (Join-Path $h 'python-path.txt') -Raw -Encoding UTF8).Trim(); "
                      "$gui=Join-Path (Split-Path $py) 'pythonw.exe'; if(Test-Path -LiteralPath $gui){$py=$gui}; "
                      "& $py (Join-Path $h 'launcher.py') open --home $h")
