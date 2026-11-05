@@ -136,6 +136,7 @@ def purpose_groups(entries, config=None):
         item['groupOrder'] = {}
         item['steps'] = {}
         item['catalogOrder'] = [999, 999]
+        item['customized'] = any(str(Path(folder).resolve()) in config.get('customized_skills', []) for folder in item.get('copies', []))
         item['displaySource'] = item['source']
         item['compactSection'] = None
         item['compactOrder'] = 0
@@ -201,6 +202,23 @@ def place_skill(skill_id, group_id, expected=None):
             target.setdefault('skills', []).append(item['name'])
         storage.save_catalog(config, before, DATA_DIR)
         return {'message': 'Skill moved to ' + (target['label'] if target else 'Uncategorized') + '.'}
+
+
+def customize_skill(skill_id, expected=None):
+    """Keep an installed skill's customization status in the personal catalog."""
+    with DELETE_LOCK:
+        item = next((s for s in skills() if s['id'] == skill_id), None)
+        if item is None or item['source'] != 'Mine' or item.get('origin', {}).get('kind') != 'installed':
+            raise ValueError('Choose an installed personal skill.')
+        config = read_catalog()
+        before = storage.revision(config)
+        if expected != before:
+            raise storage.ConflictError('The catalog changed. Reload before moving this skill.')
+        config['customized_skills'] = list(dict.fromkeys([
+            *config.get('customized_skills', []),
+            *(str(Path(folder).resolve()) for folder in item['copies'])]))
+        storage.save_catalog(config, before, DATA_DIR)
+        return {'message': 'Customized skill moved to My skills.'}
 
 
 def https_link(value):
@@ -298,8 +316,43 @@ def picker_name(folder, fallback):
             return value if isinstance(value, str) and value.strip() else fallback
     return fallback
 
+def installation_sources():
+    """Read installation receipts by resolved folder, never infer authorship from a name."""
+    installed = {}
+    for root, source in ROOTS:
+        if source != 'Personal':
+            continue
+        receipt = root.parent / '.skill-lock.json'
+        try:
+            if receipt.stat().st_size > 2 * 1024 * 1024:
+                continue
+            value = json.loads(receipt.read_text(encoding='utf-8'))
+            records = value.get('skills', {}) if isinstance(value, dict) else {}
+            if not isinstance(records, dict):
+                continue
+            for folder, record in records.items():
+                if (not isinstance(folder, str) or folder in ('.', '..') or
+                        not re.fullmatch(r'[A-Za-z0-9_.-]+', folder) or not isinstance(record, dict)):
+                    continue
+                repository = record.get('source')
+                if record.get('sourceType') != 'github' or not isinstance(repository, str):
+                    continue
+                if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
+                    continue
+                target = root / folder
+                if target.is_dir():
+                    installed[str(target.resolve())] = {
+                        'kind': 'installed', 'label': 'Installed', 'source': repository,
+                        'url': 'https://github.com/' + repository,
+                    }
+        except (OSError, ValueError, RuntimeError):
+            continue
+    return installed
+
+
 def skills():
     found, seen = [], set()
+    installed = installation_sources()
     for root, source in ROOTS:
         if not root.exists():
             continue
@@ -340,6 +393,14 @@ def skills():
             unique[key]['copies'].extend(item['copies'])
             unique[key]['deletable'] = unique[key]['deletable'] and item['deletable']
     for item in unique.values():
+        if item['source'] == 'System':
+            item['origin'] = {'kind': 'system', 'label': 'Built in'}
+        elif item['plugin']:
+            item['origin'] = {'kind': 'plugin', 'label': 'Plugin'}
+        else:
+            item['origin'] = next((installed[str(Path(folder).resolve())] for folder in item['copies']
+                                   if str(Path(folder).resolve()) in installed),
+                                  {'kind': 'local', 'label': 'Local'})
         item['usage'] = read_usage(item['copies'])
     return sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin']))
 
@@ -360,7 +421,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
+        if self.path not in ('/api/delete', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -389,6 +450,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_response(updates.request_update(DATA_DIR))
             if not isinstance(payload.get('id'), str):
                 raise ValueError('Invalid skill')
+            if self.path == '/api/customize':
+                return self.json_response(customize_skill(payload['id'], payload.get('revision')))
             if self.path == '/api/place':
                 if not isinstance(payload.get('group'), str):
                     raise ValueError('Invalid category')
