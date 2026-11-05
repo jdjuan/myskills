@@ -13,7 +13,7 @@ import storage
 REPOSITORY = 'jdjuan/skill-dashboard'
 ASSET = 'skill-dashboard.zip'
 FILES = {'server.py', 'usage.py', 'portable.py', 'storage.py', 'updates.py', 'dashboard.py',
-         'services.py', 'catalog.json', 'VERSION', 'dist/index.html', 'README.md'}
+         'services.py', 'skill_updates.py', 'catalog.json', 'VERSION', 'dist/index.html', 'README.md'}
 
 
 def now():

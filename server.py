@@ -17,6 +17,7 @@ import socketserver
 import subprocess
 import storage
 import updates
+import skill_updates
 import services
 from portable import linked, recycle_windows
 from usage import read_usage
@@ -29,6 +30,7 @@ TOKEN = secrets.token_urlsafe(32)
 DELETE_LOCK = threading.RLock()
 DATA_DIR = storage.data_home()
 MANAGED = False
+SKILL_UPDATER = None
 BACKUP = None
 ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CODEX / 'plugins/cache', 'Plugin cache')]
 
@@ -316,6 +318,23 @@ def picker_name(folder, fallback):
             return value if isinstance(value, str) and value.strip() else fallback
     return fallback
 
+def lookup_installed_skill(identifier):
+    entries = skills()
+    purpose_groups(entries)
+    item = next((item for item in entries if item['id'] == identifier), None)
+    if item is None:
+        raise ValueError('This skill is no longer installed. Refresh the dashboard.')
+    return item
+
+
+def skill_updater():
+    global SKILL_UPDATER
+    with DELETE_LOCK:
+        if SKILL_UPDATER is None or SKILL_UPDATER.directory != DATA_DIR:
+            SKILL_UPDATER = skill_updates.Updater(DATA_DIR, lambda: ROOTS, lookup_installed_skill, DELETE_LOCK)
+        return SKILL_UPDATER
+
+
 def installation_sources():
     """Read installation receipts by resolved folder, never infer authorship from a name."""
     installed = {}
@@ -344,6 +363,8 @@ def installation_sources():
                     installed[str(target.resolve())] = {
                         'kind': 'installed', 'label': 'Installed', 'source': repository,
                         'url': 'https://github.com/' + repository,
+                        **({'skillPath': record['skillPath']} if isinstance(record.get('skillPath'), str) else {}),
+                        **({'ref': record['ref']} if isinstance(record.get('ref'), str) else {}),
                     }
         except (OSError, ValueError, RuntimeError):
             continue
@@ -357,7 +378,7 @@ def skills():
         if not root.exists():
             continue
         for folder, dirs, files in os.walk(root, followlinks=True):
-            dirs[:] = [d for d in dirs if d not in ('node_modules', '.git', '__pycache__', '.venv')]
+            dirs[:] = [d for d in dirs if d not in ('node_modules', '.git', '__pycache__', '.venv') and not d.startswith(('.skill-dashboard-update-', '.skill-dashboard-old-'))]
             # Avoid symlink cycles while allowing installed linked skills.
             real = Path(folder).resolve()
             if real in seen:
@@ -421,7 +442,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
+        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -430,6 +451,22 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError('Invalid request')
+            if self.path == '/api/skill-updates':
+                updater = skill_updater()
+                action = payload.get('action')
+                if action == 'check-all':
+                    entries = skills()
+                    purpose_groups(entries)
+                    items = [item for item in entries if item['source'] == 'Mine' and item.get('origin', {}).get('kind') == 'installed' and not item.get('customized')]
+                    return self.json_response(updater.submit('check', items))
+                if not isinstance(payload.get('id'), str):
+                    raise ValueError('Choose an installed skill.')
+                item = lookup_installed_skill(payload['id'])
+                if action == 'source':
+                    return self.json_response(updater.set_source(item, payload.get('repository'), payload.get('path'), payload.get('ref', '')))
+                if action == 'review':
+                    return self.json_response(updater.review(item, payload.get('review')))
+                return self.json_response(updater.submit(action, [item], payload.get('review') if action == 'apply' else payload.get('backup')))
             if self.path == '/api/catalog':
                 storage.save_catalog(payload.get('catalog'), payload.get('revision'), DATA_DIR)
                 return self.json_response({'message': 'Organization saved.'})
@@ -484,9 +521,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response(state)
         if route == '/api/skills':
             entries = skills()
+            updater = skill_updater()
+            for item in entries:
+                if item.get('origin', {}).get('kind') == 'installed':
+                    item['skillUpdate'] = updater.describe(item)
             config = read_catalog()
             groups = purpose_groups(entries, config)
-            data = json.dumps(dict(skills=entries, groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
+            data = json.dumps(dict(skills=entries, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
             mime = 'application/json; charset=utf-8'
         elif route in ('/', '/index.html'):
             data = (BASE / 'dist/index.html').read_bytes()
