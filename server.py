@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Loopback-only skills library. Python standard library only."""
 import argparse
+import base64
+import struct
+from urllib.parse import urlsplit
 import hashlib
 import json
 import os
@@ -200,6 +203,73 @@ def place_skill(skill_id, group_id, expected=None):
         return {'message': 'Skill moved to ' + (target['label'] if target else 'Uncategorized') + '.'}
 
 
+def https_link(value):
+    if not isinstance(value, str):
+        return ''
+    try:
+        url = urlsplit(value)
+        return value if url.scheme == 'https' and url.hostname and not url.username and not url.password else ''
+    except ValueError:
+        return ''
+
+
+def skill_icon(folder):
+    """Return safe inline raster data; never expose arbitrary skill files or SVG."""
+    try:
+        root = Path(folder).resolve()
+        metadata = root / 'agents/openai.yaml'
+        if metadata.stat().st_size > 65536:
+            return {}
+        fields = {}
+        in_interface = False
+        for line in metadata.read_text(encoding='utf-8').splitlines():
+            if line and not line[0].isspace() and not line.startswith('#'):
+                in_interface = line.strip() == 'interface:'
+                continue
+            match = re.match(r'^  (icon_large|icon_small):\s*(.*?)\s*$', line) if in_interface else None
+            if not match:
+                continue
+            value = match[2]
+            if value.startswith('"'):
+                value = json.loads(value)
+            elif value.startswith("'") and value.endswith("'"):
+                value = value[1:-1].replace("''", "'")
+            else:
+                value = value.split(' #', 1)[0].strip()
+            if isinstance(value, str):
+                fields[match[1]] = value
+        for field in ('icon_large', 'icon_small'):
+            relative = Path(fields.get(field, ''))
+            if relative.is_absolute() or '..' in relative.parts or relative.suffix.lower() != '.png':
+                continue
+            path = (root / relative).resolve()
+            if not path.is_relative_to(root) or path.stat().st_size > 512 * 1024:
+                continue
+            data = path.read_bytes()
+            if len(data) < 33 or data[:16] != b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR':
+                continue
+            width, height = struct.unpack('>II', data[16:24])
+            if not (0 < width <= 4096 and 0 < height <= 4096):
+                continue
+            result = {'icon': 'data:image/png;base64,' + base64.b64encode(data).decode('ascii')}
+            credit_path = path.with_suffix('.credit.json').resolve()
+            try:
+                if credit_path.is_relative_to(root) and credit_path.stat().st_size <= 8192:
+                    credit = json.loads(credit_path.read_text(encoding='utf-8'))
+                    if isinstance(credit, dict) and isinstance(credit.get('author'), str):
+                        author_url = https_link(credit.get('authorUrl'))
+                        source_url = https_link(credit.get('sourceUrl'))
+                        if author_url and source_url and credit['author'].strip():
+                            result['iconCredit'] = {'author': credit['author'][:160], 'authorUrl': author_url,
+                                                    'sourceUrl': source_url}
+            except (OSError, ValueError, RuntimeError):
+                pass
+            return result
+    except (OSError, ValueError, RuntimeError, UnicodeError):
+        pass
+    return {}
+
+
 def picker_name(folder, fallback):
     """Read the picker title from the interface block without YAML dependencies."""
     try:
@@ -259,7 +329,7 @@ def skills():
                 parts = relative.parts
                 plugin = parts[1] if len(parts) > 2 else parts[0]
                 group = 'External'
-            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, displayName=picker_name(path.parent, name), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
+            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
     # Collapse identical copies within each origin; retain different versions as distinct entries.
     unique = {}
     for item in found:
