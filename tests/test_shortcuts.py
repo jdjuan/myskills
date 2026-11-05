@@ -31,7 +31,7 @@ class ShortcutTests(unittest.TestCase):
             state = services.set_shortcut(self.home, True, path=self.app, register=False)
             self.assertTrue(state['installed'])
             info = plistlib.loads((self.app / 'Contents/Info.plist').read_bytes())
-            self.assertEqual(info['CFBundleName'], 'Skills')
+            self.assertEqual(info['CFBundleName'], 'MySkills')
             script = (self.app / 'Contents/MacOS/launcher').read_text()
             self.assertIn('python-path.txt', script)
             self.assertIn('launcher.py', script)
@@ -59,6 +59,16 @@ class ShortcutTests(unittest.TestCase):
             self.assertTrue(services.shortcut_status(other, self.app)['conflict'])
             with self.assertRaises(ValueError): services.set_shortcut(other, False, self.app, register=False)
             self.assertTrue(self.app.exists())
+
+    def test_new_names_preserve_legacy_launcher_locations(self):
+        with patch.object(Path, 'home', return_value=self.home), patch.dict(os.environ, {'APPDATA': str(self.home)}):
+            for platform, relative in [('darwin', 'Applications/Skills.app'), ('win32', 'Microsoft/Windows/Start Menu/Programs/Skills.lnk')]:
+                with self.subTest(platform=platform), patch.object(services.sys, 'platform', platform):
+                    legacy = self.home / relative
+                    self.assertEqual(services.shortcut_path(), legacy.with_name(legacy.name.replace('Skills', 'MySkills')))
+                    legacy.parent.mkdir(parents=True, exist_ok=True)
+                    legacy.touch()
+                    self.assertEqual(services.shortcut_path(), legacy)
 
     def test_choice_preserves_other_preferences(self):
         data = self.home / 'data'

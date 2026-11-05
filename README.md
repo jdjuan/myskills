@@ -1,4 +1,4 @@
-# Skill Dashboard
+# MySkills
 
 A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, AI API key, database or hosting service. The dashboard needs no account; optional GitHub backup uses your own GitHub account.
 
@@ -6,7 +6,7 @@ A local dashboard for **your own installed Codex skills**. Browse instructions, 
 
 Give Codex this prompt:
 
-> Install https://github.com/jdjuan/skill-dashboard
+> Install https://github.com/jdjuan/myskills
 
 ### Instructions for the installing Codex agent
 
@@ -23,14 +23,14 @@ When the user asks to install this dashboard, complete the following setup. Thes
 ### macOS
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jdjuan/skill-dashboard/main/install.sh -o /tmp/skill-dashboard-install.sh
+curl -fsSL https://raw.githubusercontent.com/jdjuan/myskills/main/install.sh -o /tmp/skill-dashboard-install.sh
 sh /tmp/skill-dashboard-install.sh
 ```
 
 ### Windows
 
 ```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/jdjuan/skill-dashboard/main/install.ps1 -OutFile "$env:TEMP\skill-dashboard-install.ps1"
+Invoke-WebRequest https://raw.githubusercontent.com/jdjuan/myskills/main/install.ps1 -OutFile "$env:TEMP\skill-dashboard-install.ps1"
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\skill-dashboard-install.ps1"
 ```
 
@@ -129,7 +129,7 @@ Recorded usage is best effort, enabled through the optional instruction block ra
 
 ## Publish releases
 
-Every authorized push to `main` runs tests on macOS and Windows, then automatically publishes a stable GitHub release with the allowlisted `skill-dashboard.zip` and bootstrap scripts. Installed users can get it through **Settings → Check now**; automatic updates check daily. A failed test gate prevents publication. Pull requests only test and package; they never publish.
+Every authorized push to `main` runs tests on macOS and Windows, then automatically publishes a stable GitHub release with the allowlisted `myskills.zip` and bootstrap scripts. Installed users can get it through **Settings → Check now**; automatic updates check daily. A failed test gate prevents publication. Pull requests only test and package; they never publish.
 
 The workflow assigns the next patch version from existing stable tags, using tracked `VERSION` as a minimum. It writes that version into the release archive without making a version-bump commit. You can raise `VERSION` explicitly for a minor or major release. Branch/tag events and reruns for the same tagged commit reuse its version and leave an existing release unchanged. Release jobs are serialized to avoid version collisions. For an explicitly authorized manual release, push a `vMAJOR.MINOR.PATCH` tag matching `VERSION`. `python3 scripts/package.py` packages locally. Runtime, catalogs, logs, installed skills and unrelated checkout files are excluded.
 
@@ -163,3 +163,7 @@ Public GitHub repositories are supported without Git or extra Python packages. T
 Applying uses a staged copy of the reviewed files, validates their Git blob hashes and readable `SKILL.md`, and keeps a recoverable backup before replacing the skill. Usage logs and the dashboard catalog are preserved; downloaded scripts are never executed. Unsafe paths, links, submodules, oversized skills, and development/dependency folders are refused. If a swap fails, prior folders are restored; a transaction journal recovers interrupted swaps on restart. **Restore previous version** in the skill details restores the available backup after confirmation and refuses to overwrite edits made since the update. Update receipts, cached reviews, and backups live under the personal data directory (`skill-updates.json`, `skill-update-reviews/`, and `skill-update-backups/`) and survive dashboard releases. Backups are retained locally; they are not committed or published.
 
 The dashboard header and browser favicon use the approved yellow-and-black logo. Compact header artwork and a 16/32/48-pixel favicon are embedded in the buildless page, keeping release packaging and static-file access unchanged. The source image is retained at `design/logo/skill-manager-yellow-black.png`.
+
+## MySkills naming and compatibility
+
+The product and repository are now MySkills (`jdjuan/myskills`). New search launchers use MySkills; existing launchers remain usable. Installation folders, service identifiers, environment variables, health identifiers, and backup formats retain their original names to preserve existing installations and personal data. Releases include `myskills.zip` and a legacy `skill-dashboard.zip` download for older updaters.

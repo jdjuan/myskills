@@ -29,7 +29,7 @@ def main():
     subprocess.run([sys.executable, '-m', 'unittest', 'discover', '-s', 'tests', '-v'],
                    cwd=BASE, check=True)
     with tempfile.TemporaryDirectory(prefix='skill-dashboard-preflight-') as directory:
-        archive = Path(directory) / 'skill-dashboard.zip'
+        archive = Path(directory) / 'myskills.zip'
         subprocess.run([sys.executable, str(BASE / 'scripts/package.py'), str(archive)],
                        cwd=BASE, check=True)
         with zipfile.ZipFile(archive) as package:

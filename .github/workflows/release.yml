@@ -43,6 +43,8 @@ jobs:
         id: version
         run: python scripts/release_version.py
       - run: python scripts/package.py
+      - name: Keep downloads compatible with existing installations
+        run: cp release-dist/myskills.zip release-dist/skill-dashboard.zip
       - name: Publish GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -52,6 +54,6 @@ jobs:
           if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
             echo "Release $RELEASE_TAG already exists; leaving it unchanged."
           else
-            gh release create "$RELEASE_TAG" release-dist/skill-dashboard.zip install.sh install.ps1 \
+            gh release create "$RELEASE_TAG" release-dist/myskills.zip release-dist/skill-dashboard.zip install.sh install.ps1 \
               --target "$RELEASE_SHA" --generate-notes --latest
           fi

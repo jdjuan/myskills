@@ -115,9 +115,11 @@ def remove_legacy(checkout):
 # Search launchers live outside application releases and always call the stable launcher.
 def shortcut_path():
     if sys.platform == 'darwin':
-        return Path.home() / 'Applications/Skills.app'
+        legacy = Path.home() / 'Applications/Skills.app'
+        return legacy if legacy.exists() or legacy.is_symlink() else legacy.with_name('MySkills.app')
     if sys.platform == 'win32':
-        return Path(os.environ.get('APPDATA', str(Path.home() / 'AppData/Roaming'))) / 'Microsoft/Windows/Start Menu/Programs/Skills.lnk'
+        legacy = Path(os.environ.get('APPDATA', str(Path.home() / 'AppData/Roaming'))) / 'Microsoft/Windows/Start Menu/Programs/Skills.lnk'
+        return legacy if legacy.exists() or legacy.is_symlink() else legacy.with_name('MySkills.lnk')
     return None
 
 
@@ -216,17 +218,17 @@ def set_shortcut(home, enabled, path=None, register=True):
     if not state['supported']:
         raise ValueError('Search launchers are supported on macOS and Windows.')
     if state['conflict']:
-        raise ValueError('A different Skills app or shortcut already exists. It was left unchanged: ' + state['path'])
+        raise ValueError('A different MySkills app or shortcut already exists. It was left unchanged: ' + state['path'])
     target = Path(state['path'])
     if enabled:
         if not state['installed']:
             target.parent.mkdir(parents=True, exist_ok=True)
             if sys.platform == 'darwin':
                 with tempfile.TemporaryDirectory(prefix='.skills-launcher-', dir=target.parent) as temporary:
-                    bundle = Path(temporary) / 'Skills.app'
+                    bundle = Path(temporary) / 'MySkills.app'
                     executable = bundle / 'Contents/MacOS/launcher'
                     executable.parent.mkdir(parents=True)
-                    info = {'CFBundleName': 'Skills', 'CFBundleDisplayName': 'Skills',
+                    info = {'CFBundleName': 'MySkills', 'CFBundleDisplayName': 'MySkills',
                             'CFBundleIdentifier': 'io.skilldashboard.launcher',
                             'CFBundlePackageType': 'APPL', 'CFBundleExecutable': 'launcher',
                             'CFBundleVersion': '1', 'CFBundleShortVersionString': '1.0', 'LSUIElement': True,
@@ -236,7 +238,7 @@ def set_shortcut(home, enabled, path=None, register=True):
                     executable.chmod(0o755)
                     subprocess.run(['/bin/sh', '-n', str(executable)], check=True)
                     if target.exists() or target.is_symlink():
-                        raise ValueError('The Skills app location changed. It was left unchanged.')
+                        raise ValueError('The MySkills app location changed. It was left unchanged.')
                     bundle.rename(target)
             else:
                 # Create into a temporary file, then publish without replacing an existing shortcut.
@@ -247,7 +249,7 @@ def set_shortcut(home, enabled, path=None, register=True):
                 try:
                     _windows_shortcut(home, temporary, write=True)
                     if target.exists() or target.is_symlink():
-                        raise ValueError('The Skills shortcut location changed. It was left unchanged.')
+                        raise ValueError('The MySkills shortcut location changed. It was left unchanged.')
                     temporary.rename(target)
                 finally:
                     temporary.unlink(missing_ok=True)
@@ -275,7 +277,7 @@ def save_shortcut_choice(home, enabled, directory=None):
 
 def configure_shortcut(home, enabled, directory=None):
     if type(enabled) is not bool:
-        raise ValueError('Choose whether the Skills launcher is enabled.')
+        raise ValueError('Choose whether the MySkills launcher is enabled.')
     home = Path(home)
     if not (home / 'launcher.py').is_file() or not (home / 'python-path.txt').is_file():
         raise ValueError('Install the dashboard before adding its search launcher.')
@@ -297,7 +299,7 @@ class GitHubBackup:
     MAX_TOTAL = 100 * 1024 * 1024
     SKIP_DIRS = {'.git', '.system', 'node_modules', '__pycache__', '.venv', 'venv', '.ssh', '.aws'}
     SKIP_FILES = {'.DS_Store', 'usage.jsonl', 'credentials.json', 'auth.json'}
-    DESCRIPTION = 'Private Skill Dashboard backups'
+    DESCRIPTION = 'Private MySkills backups'
 
     def __init__(self, home, directory, roots):
         import threading
@@ -588,7 +590,7 @@ class GitHubBackup:
         entries = {item['path']: item for item in tree['tree'] if item['type'] == 'blob'}
         if head != initial:
             if 'backup.json' not in entries:
-                raise ValueError('This repository is not a Skill Dashboard backup. Choose a different repository name.')
+                raise ValueError('This repository is not a MySkills backup. Choose a different repository name.')
             self.validate_manifest(self.read_blob(repository, entries['backup.json']['sha']))
         return head, branch, entries
 
