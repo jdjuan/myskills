@@ -74,7 +74,7 @@ def install(home, source=None, migrate=None, start=True, open_browser=True, shor
             services.configure_shortcut(home, True, directory)
         except (OSError, ValueError, subprocess.SubprocessError) as error:
             # A launcher is convenience; a naming conflict must not break installation.
-            print(f'Skills launcher was not changed: {error}', file=sys.stderr)
+            print(f'MySkills launcher was not changed: {error}', file=sys.stderr)
     if start:
         if migrate:
             services.remove_legacy(migrate)

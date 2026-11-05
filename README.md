@@ -79,9 +79,9 @@ The dashboard binds only to loopback. Port 8765 is preferred; if occupied, it ch
 
 Automatic updates are on by default. The supervisor checks stable GitHub releases on startup and every 24 hours. It downloads the new application, switches versions and restarts the dashboard. It never pulls development code, regenerates your catalog, installs skills or runs a test/validation pipeline on your computer. Interrupted downloads leave the current installation intact. Settings includes the version, last update check, errors, automatic-update toggle and manual check button. An open browser checks for interface changes every three seconds while visible and reloads automatically, including while Settings is open. Organization drafts, backup setup and deletion confirmations defer the reload until their window closes, with an update notice. Connection failures during a restart are retried without reloading an unavailable page. One previous release is retained for manual rollback. No custom update server is needed.
 
-### Open Skills from app search
+### Open MySkills from app search
 
-New installations create a **Skills** launcher automatically: on macOS, press Command-Space and search for Skills; on Windows, search for Skills in the Start menu. The launcher calls the stable dashboard command and resolves the current runtime and local address, so it survives updates and port changes. Spotlight indexing may take a moment; installation requests indexing without opening Spotlight.
+New installations create a **MySkills** launcher automatically: on macOS, press Command-Space and search for MySkills; on Windows, search for MySkills in the Start menu. The launcher calls the stable dashboard command and resolves the current runtime and local address, so it survives updates and port changes. Spotlight indexing may take a moment; installation requests indexing without opening Spotlight.
 
 Existing installations can use **Settings → Add Spotlight launcher** (macOS) or **Add Start menu shortcut** (Windows). Settings also removes a dashboard-owned launcher. That choice is preserved across reinstalls and application updates. A different app or shortcut named Skills is left untouched, with an explanation in Settings. Uninstallation removes only this installation's own launcher.
 
