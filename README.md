@@ -1,4 +1,4 @@
-# Skill Dashboard
+# MySkills
 
 A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, AI API key, database or hosting service. The dashboard needs no account; optional GitHub backup uses your own GitHub account.
 
@@ -6,7 +6,7 @@ A local dashboard for **your own installed Codex skills**. Browse instructions, 
 
 Give Codex this prompt:
 
-> Install https://github.com/jdjuan/skill-dashboard
+> Install https://github.com/jdjuan/myskills
 
 ### Instructions for the installing Codex agent
 
@@ -23,14 +23,14 @@ When the user asks to install this dashboard, complete the following setup. Thes
 ### macOS
 
 ```sh
-curl -fsSL https://raw.githubusercontent.com/jdjuan/skill-dashboard/main/install.sh -o /tmp/skill-dashboard-install.sh
+curl -fsSL https://raw.githubusercontent.com/jdjuan/myskills/main/install.sh -o /tmp/skill-dashboard-install.sh
 sh /tmp/skill-dashboard-install.sh
 ```
 
 ### Windows
 
 ```powershell
-Invoke-WebRequest https://raw.githubusercontent.com/jdjuan/skill-dashboard/main/install.ps1 -OutFile "$env:TEMP\skill-dashboard-install.ps1"
+Invoke-WebRequest https://raw.githubusercontent.com/jdjuan/myskills/main/install.ps1 -OutFile "$env:TEMP\skill-dashboard-install.ps1"
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:TEMP\skill-dashboard-install.ps1"
 ```
 
@@ -144,3 +144,7 @@ The launcher change was verified with 40 tests on macOS (39 passed; the native W
 Verification uses disposable fixture skills and a simulated GitHub API for repository creation, private-only writes, unchanged backups, upload failures, restoration to a different root, conflict preservation, replacement recovery, daily scheduling, traversal rejection and expired/local-edit previews. The official portable GitHub CLI was downloaded and executed successfully in a temporary folder. After the owner enabled personal backups, a real private-repository backup also completed successfully; a read-back verified its commit, file count, catalog and manifest.
 
 The completed local suite contains 67 tests (66 passed; one native Windows shortcut test is skipped on macOS), including safe API-error diagnostics and logging-failure handling. Browser checks covered connection/setup with a disposable simulated account, backup, daily preferences, restore previews, keeping conflicts and replacing conflicts with recovery copies.
+
+## MySkills naming and compatibility
+
+The product and repository are now MySkills (`jdjuan/myskills`). New search launchers use MySkills; existing launchers remain usable. Installation folders, service identifiers, environment variables, health identifiers, and backup formats retain their original names to preserve existing installations and personal data. Releases include `myskills.zip` and a legacy `skill-dashboard.zip` download for older updaters.

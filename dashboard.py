@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install, supervise, update and open a personal Skill Dashboard."""
+"""Install, supervise, update and open a personal MySkills."""
 import argparse
 import json
 import os
@@ -289,5 +289,5 @@ if __name__ == '__main__':
     try:
         main()
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(f'Skill Dashboard: {error}', file=sys.stderr)
+        print(f'MySkills: {error}', file=sys.stderr)
         sys.exit(1)

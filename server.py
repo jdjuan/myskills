@@ -393,7 +393,7 @@ if __name__ == '__main__':
         storage.atomic_json(DATA_DIR / 'server.json', {'url': url, 'pid': os.getpid()})
     BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills')])
     BACKUP.start_scheduler()
-    print(f'Skill dashboard: {url}', flush=True)
+    print(f'MySkills: {url}', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

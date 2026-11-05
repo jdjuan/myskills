@@ -15,7 +15,7 @@ if ($LASTEXITCODE -ne 0) { throw 'Could not find the dashboard runtime.' }
 $Work = Join-Path ([IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
 New-Item -ItemType Directory -Path $Work | Out-Null
 try {
-    Invoke-WebRequest https://github.com/jdjuan/skill-dashboard/releases/latest/download/skill-dashboard.zip -OutFile (Join-Path $Work 'app.zip')
+    Invoke-WebRequest https://github.com/jdjuan/myskills/releases/latest/download/myskills.zip -OutFile (Join-Path $Work 'app.zip')
     Expand-Archive (Join-Path $Work 'app.zip') (Join-Path $Work 'app')
     $Arguments = @((Join-Path $Work 'app\dashboard.py'), 'install', '--home', $DashboardHome)
     if ($NoOpen) { $Arguments += '--no-open' }

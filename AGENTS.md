@@ -1,4 +1,4 @@
-# Skill Dashboard
+# MySkills
 
 - Keep category membership, sidebar order, explicit skill order, steps, and compact-section rules in the user's data-directory `catalog.json`. The tracked `catalog.json` is a neutral first-run template, never a personal catalog.
 - Do not restore dependencies on an installed coordinator skill or duplicate catalog rules in JavaScript.
