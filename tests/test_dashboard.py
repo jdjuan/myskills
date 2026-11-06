@@ -105,6 +105,36 @@ class CatalogTests(IsolatedState):
 
 
 class DiscoveryTests(IsolatedState):
+    def test_installation_receipts_match_folders_not_skill_names(self):
+        personal = self.base / 'codex/skills'
+        installed = self.base / 'agents/skills'
+        for root, body in [(personal, 'My local changes'), (installed, 'Installed instructions')]:
+            folder = root / 'example'
+            folder.mkdir(parents=True)
+            (folder / 'SKILL.md').write_text('---\nname: example\ndescription: Example\n---\n' + body, encoding='utf-8')
+        storage.atomic_json(installed.parent / '.skill-lock.json', {'version': 3, 'skills': {
+            'example': {'source': 'trusted/collection', 'sourceType': 'github'},
+            '../outside': {'source': 'trusted/collection', 'sourceType': 'github'},
+        }})
+        with patch.object(server, 'ROOTS', [(personal, 'Personal'), (installed, 'Personal')]):
+            items = {item['content'].split('\n')[-1]: item for item in server.skills()}
+        self.assertEqual(items['Installed instructions']['origin'], {
+            'kind': 'installed', 'label': 'Installed', 'source': 'trusted/collection',
+            'url': 'https://github.com/trusted/collection'})
+        self.assertEqual(items['My local changes']['origin']['kind'], 'local')
+
+    def test_invalid_receipts_do_not_break_discovery_or_create_source_links(self):
+        root = self.base / 'agents/skills'
+        folder = root / 'example'; folder.mkdir(parents=True)
+        (folder / 'SKILL.md').write_text('---\nname: example\n---\nBody', encoding='utf-8')
+        receipt = root.parent / '.skill-lock.json'
+        for value in ['invalid json', json.dumps({'skills': []}), json.dumps({'skills': {
+                'example': {'source': 'https://user:secret@evil.test/repo', 'sourceType': 'github'}}})]:
+            receipt.write_text(value, encoding='utf-8')
+            with patch.object(server, 'ROOTS', [(root, 'Personal')]):
+                item = server.skills()[0]
+            self.assertEqual(item['origin'], {'kind': 'local', 'label': 'Local'})
+
     def test_picker_title_refresh_and_fallback(self):
         root = self.base / 'skills'; root.mkdir()
         (root / 'SKILL.md').write_text('---\nname: fixture\ndescription: Example\n---\nBody', encoding='utf-8')

@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Loopback-only skills library. Python standard library only."""
 import argparse
+import base64
+import struct
+from urllib.parse import urlsplit
 import hashlib
 import json
 import os
@@ -14,6 +17,7 @@ import socketserver
 import subprocess
 import storage
 import updates
+import skill_updates
 import services
 from portable import linked, recycle_windows
 from usage import read_usage
@@ -26,6 +30,7 @@ TOKEN = secrets.token_urlsafe(32)
 DELETE_LOCK = threading.RLock()
 DATA_DIR = storage.data_home()
 MANAGED = False
+SKILL_UPDATER = None
 BACKUP = None
 ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CODEX / 'plugins/cache', 'Plugin cache')]
 
@@ -133,6 +138,7 @@ def purpose_groups(entries, config=None):
         item['groupOrder'] = {}
         item['steps'] = {}
         item['catalogOrder'] = [999, 999]
+        item['customized'] = any(str(Path(folder).resolve()) in config.get('customized_skills', []) for folder in item.get('copies', []))
         item['displaySource'] = item['source']
         item['compactSection'] = None
         item['compactOrder'] = 0
@@ -200,6 +206,90 @@ def place_skill(skill_id, group_id, expected=None):
         return {'message': 'Skill moved to ' + (target['label'] if target else 'Uncategorized') + '.'}
 
 
+def customize_skill(skill_id, expected=None):
+    """Keep an installed skill's customization status in the personal catalog."""
+    with DELETE_LOCK:
+        item = next((s for s in skills() if s['id'] == skill_id), None)
+        if item is None or item['source'] != 'Mine' or item.get('origin', {}).get('kind') != 'installed':
+            raise ValueError('Choose an installed personal skill.')
+        config = read_catalog()
+        before = storage.revision(config)
+        if expected != before:
+            raise storage.ConflictError('The catalog changed. Reload before moving this skill.')
+        config['customized_skills'] = list(dict.fromkeys([
+            *config.get('customized_skills', []),
+            *(str(Path(folder).resolve()) for folder in item['copies'])]))
+        storage.save_catalog(config, before, DATA_DIR)
+        return {'message': 'Customized skill moved to My skills.'}
+
+
+def https_link(value):
+    if not isinstance(value, str):
+        return ''
+    try:
+        url = urlsplit(value)
+        return value if url.scheme == 'https' and url.hostname and not url.username and not url.password else ''
+    except ValueError:
+        return ''
+
+
+def skill_icon(folder):
+    """Return safe inline raster data; never expose arbitrary skill files or SVG."""
+    try:
+        root = Path(folder).resolve()
+        metadata = root / 'agents/openai.yaml'
+        if metadata.stat().st_size > 65536:
+            return {}
+        fields = {}
+        in_interface = False
+        for line in metadata.read_text(encoding='utf-8').splitlines():
+            if line and not line[0].isspace() and not line.startswith('#'):
+                in_interface = line.strip() == 'interface:'
+                continue
+            match = re.match(r'^  (icon_large|icon_small):\s*(.*?)\s*$', line) if in_interface else None
+            if not match:
+                continue
+            value = match[2]
+            if value.startswith('"'):
+                value = json.loads(value)
+            elif value.startswith("'") and value.endswith("'"):
+                value = value[1:-1].replace("''", "'")
+            else:
+                value = value.split(' #', 1)[0].strip()
+            if isinstance(value, str):
+                fields[match[1]] = value
+        for field in ('icon_large', 'icon_small'):
+            relative = Path(fields.get(field, ''))
+            if relative.is_absolute() or '..' in relative.parts or relative.suffix.lower() != '.png':
+                continue
+            path = (root / relative).resolve()
+            if not path.is_relative_to(root) or path.stat().st_size > 512 * 1024:
+                continue
+            data = path.read_bytes()
+            if len(data) < 33 or data[:16] != b'\x89PNG\r\n\x1a\n\x00\x00\x00\rIHDR':
+                continue
+            width, height = struct.unpack('>II', data[16:24])
+            if not (0 < width <= 4096 and 0 < height <= 4096):
+                continue
+            result = {'icon': 'data:image/png;base64,' + base64.b64encode(data).decode('ascii')}
+            credit_path = path.with_suffix('.credit.json').resolve()
+            try:
+                if credit_path.is_relative_to(root) and credit_path.stat().st_size <= 8192:
+                    credit = json.loads(credit_path.read_text(encoding='utf-8'))
+                    if isinstance(credit, dict) and isinstance(credit.get('author'), str):
+                        author_url = https_link(credit.get('authorUrl'))
+                        source_url = https_link(credit.get('sourceUrl'))
+                        if author_url and source_url and credit['author'].strip():
+                            result['iconCredit'] = {'author': credit['author'][:160], 'authorUrl': author_url,
+                                                    'sourceUrl': source_url}
+            except (OSError, ValueError, RuntimeError):
+                pass
+            return result
+    except (OSError, ValueError, RuntimeError, UnicodeError):
+        pass
+    return {}
+
+
 def picker_name(folder, fallback):
     """Read the picker title from the interface block without YAML dependencies."""
     try:
@@ -228,13 +318,67 @@ def picker_name(folder, fallback):
             return value if isinstance(value, str) and value.strip() else fallback
     return fallback
 
+def lookup_installed_skill(identifier):
+    entries = skills()
+    purpose_groups(entries)
+    item = next((item for item in entries if item['id'] == identifier), None)
+    if item is None:
+        raise ValueError('This skill is no longer installed. Refresh the dashboard.')
+    return item
+
+
+def skill_updater():
+    global SKILL_UPDATER
+    with DELETE_LOCK:
+        if SKILL_UPDATER is None or SKILL_UPDATER.directory != DATA_DIR:
+            SKILL_UPDATER = skill_updates.Updater(DATA_DIR, lambda: ROOTS, lookup_installed_skill, DELETE_LOCK)
+        return SKILL_UPDATER
+
+
+def installation_sources():
+    """Read installation receipts by resolved folder, never infer authorship from a name."""
+    installed = {}
+    for root, source in ROOTS:
+        if source != 'Personal':
+            continue
+        receipt = root.parent / '.skill-lock.json'
+        try:
+            if receipt.stat().st_size > 2 * 1024 * 1024:
+                continue
+            value = json.loads(receipt.read_text(encoding='utf-8'))
+            records = value.get('skills', {}) if isinstance(value, dict) else {}
+            if not isinstance(records, dict):
+                continue
+            for folder, record in records.items():
+                if (not isinstance(folder, str) or folder in ('.', '..') or
+                        not re.fullmatch(r'[A-Za-z0-9_.-]+', folder) or not isinstance(record, dict)):
+                    continue
+                repository = record.get('source')
+                if record.get('sourceType') != 'github' or not isinstance(repository, str):
+                    continue
+                if not re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', repository):
+                    continue
+                target = root / folder
+                if target.is_dir():
+                    installed[str(target.resolve())] = {
+                        'kind': 'installed', 'label': 'Installed', 'source': repository,
+                        'url': 'https://github.com/' + repository,
+                        **({'skillPath': record['skillPath']} if isinstance(record.get('skillPath'), str) else {}),
+                        **({'ref': record['ref']} if isinstance(record.get('ref'), str) else {}),
+                    }
+        except (OSError, ValueError, RuntimeError):
+            continue
+    return installed
+
+
 def skills():
     found, seen = [], set()
+    installed = installation_sources()
     for root, source in ROOTS:
         if not root.exists():
             continue
         for folder, dirs, files in os.walk(root, followlinks=True):
-            dirs[:] = [d for d in dirs if d not in ('node_modules', '.git', '__pycache__', '.venv')]
+            dirs[:] = [d for d in dirs if d not in ('node_modules', '.git', '__pycache__', '.venv') and not d.startswith(('.skill-dashboard-update-', '.skill-dashboard-old-'))]
             # Avoid symlink cycles while allowing installed linked skills.
             real = Path(folder).resolve()
             if real in seen:
@@ -259,7 +403,7 @@ def skills():
                 parts = relative.parts
                 plugin = parts[1] if len(parts) > 2 else parts[0]
                 group = 'External'
-            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, displayName=picker_name(path.parent, name), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
+            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
     # Collapse identical copies within each origin; retain different versions as distinct entries.
     unique = {}
     for item in found:
@@ -270,6 +414,14 @@ def skills():
             unique[key]['copies'].extend(item['copies'])
             unique[key]['deletable'] = unique[key]['deletable'] and item['deletable']
     for item in unique.values():
+        if item['source'] == 'System':
+            item['origin'] = {'kind': 'system', 'label': 'Built in'}
+        elif item['plugin']:
+            item['origin'] = {'kind': 'plugin', 'label': 'Plugin'}
+        else:
+            item['origin'] = next((installed[str(Path(folder).resolve())] for folder in item['copies']
+                                   if str(Path(folder).resolve()) in installed),
+                                  {'kind': 'local', 'label': 'Local'})
         item['usage'] = read_usage(item['copies'])
     return sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin']))
 
@@ -290,7 +442,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
+        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -299,6 +451,22 @@ class Handler(BaseHTTPRequestHandler):
             payload = json.loads(self.rfile.read(length))
             if not isinstance(payload, dict):
                 raise ValueError('Invalid request')
+            if self.path == '/api/skill-updates':
+                updater = skill_updater()
+                action = payload.get('action')
+                if action == 'check-all':
+                    entries = skills()
+                    purpose_groups(entries)
+                    items = [item for item in entries if item['source'] == 'Mine' and item.get('origin', {}).get('kind') == 'installed' and not item.get('customized')]
+                    return self.json_response(updater.submit('check', items))
+                if not isinstance(payload.get('id'), str):
+                    raise ValueError('Choose an installed skill.')
+                item = lookup_installed_skill(payload['id'])
+                if action == 'source':
+                    return self.json_response(updater.set_source(item, payload.get('repository'), payload.get('path'), payload.get('ref', '')))
+                if action == 'review':
+                    return self.json_response(updater.review(item, payload.get('review')))
+                return self.json_response(updater.submit(action, [item], payload.get('review') if action == 'apply' else payload.get('backup')))
             if self.path == '/api/catalog':
                 storage.save_catalog(payload.get('catalog'), payload.get('revision'), DATA_DIR)
                 return self.json_response({'message': 'Organization saved.'})
@@ -319,6 +487,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_response(updates.request_update(DATA_DIR))
             if not isinstance(payload.get('id'), str):
                 raise ValueError('Invalid skill')
+            if self.path == '/api/customize':
+                return self.json_response(customize_skill(payload['id'], payload.get('revision')))
             if self.path == '/api/place':
                 if not isinstance(payload.get('group'), str):
                     raise ValueError('Invalid category')
@@ -351,9 +521,13 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response(state)
         if route == '/api/skills':
             entries = skills()
+            updater = skill_updater()
+            for item in entries:
+                if item.get('origin', {}).get('kind') == 'installed':
+                    item['skillUpdate'] = updater.describe(item)
             config = read_catalog()
             groups = purpose_groups(entries, config)
-            data = json.dumps(dict(skills=entries, groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
+            data = json.dumps(dict(skills=entries, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
             mime = 'application/json; charset=utf-8'
         elif route in ('/', '/index.html'):
             data = (BASE / 'dist/index.html').read_bytes()
@@ -393,7 +567,7 @@ if __name__ == '__main__':
         storage.atomic_json(DATA_DIR / 'server.json', {'url': url, 'pid': os.getpid()})
     BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills')])
     BACKUP.start_scheduler()
-    print(f'Skill dashboard: {url}', flush=True)
+    print(f'MySkills: {url}', flush=True)
     try:
         server.serve_forever()
     except KeyboardInterrupt:

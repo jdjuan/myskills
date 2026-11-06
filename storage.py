@@ -111,6 +111,9 @@ def validate_catalog(config):
             raise ValueError('A category cannot contain duplicate skill members.')
     if not isinstance(config.get('plugin_labels', {}), dict) or not all(isinstance(k, str) and isinstance(v, str) for k, v in config.get('plugin_labels', {}).items()):
         raise ValueError('Invalid plugin labels.')
+    customized = config.get('customized_skills', [])
+    if not isinstance(customized, list) or not all(isinstance(path, str) and 0 < len(path) <= 4096 for path in customized):
+        raise ValueError('Invalid customized skills.')
     sections = config.get('compact_sections', [])
     if not isinstance(sections, list):
         raise ValueError('Invalid compact sections.')

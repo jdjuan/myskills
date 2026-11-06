@@ -54,3 +54,37 @@ let loading=false,loaded=true,uiRevision='old-ui',snapshot='',token='old-token',
         result = subprocess.run(['node'], input=harness + code + cases, text=True,
                                 capture_output=True, encoding='utf-8', timeout=15)
         self.assertEqual(result.returncode, 0, result.stderr)
+
+    def test_icon_setup_copy_and_manual_fallback(self):
+        import html as html_parser
+        import json
+        import re
+        html = (Path(__file__).resolve().parents[1] / 'dist/index.html').read_text(encoding='utf-8')
+        prompt = html_parser.unescape(re.search(r'<pre id="iconSetupPrompt"[^>]*>(.*?)</pre>', html, re.S)[1])
+        code = html[html.index("$('copyIconSetup').onclick="):html.index("$('copyBackupSetup').onclick=")]
+        harness = r'''
+const assert=require('node:assert/strict');
+let copied='',reject=false,focused=false,selected=null;
+const elements={iconSetupPrompt:{textContent:PROMPT,focus(){focused=true}},
+ iconSetupDetails:{open:false},iconSetupStatus:{textContent:''},copyIconSetup:{}};
+const $=id=>elements[id];
+const navigator={clipboard:{async writeText(value){if(reject)throw Error('Denied');copied=value}}};
+const selection={removeAllRanges(){selected=null},addRange(range){selected=range.element}};
+const window={getSelection:()=>selection};
+const document={createRange:()=>({selectNodeContents(element){this.element=element}})};
+'''.replace('PROMPT', json.dumps(prompt))
+        cases = r'''
+(async()=>{
+ await $('copyIconSetup').onclick();
+ assert.equal(copied,$('iconSetupPrompt').textContent);
+ assert.match($('iconSetupStatus').textContent,/Copied/);
+ assert.equal($('iconSetupDetails').open,false);
+ reject=true;await $('copyIconSetup').onclick();
+ assert.equal($('iconSetupDetails').open,true);assert.equal(focused,true);
+ assert.equal(selected,$('iconSetupPrompt'));
+ assert.match($('iconSetupStatus').textContent,/Command-C.*Ctrl\+C/);
+})().catch(error=>{console.error(error);process.exitCode=1});
+'''
+        result = subprocess.run(['node'], input=harness + code + cases, text=True,
+                                capture_output=True, encoding='utf-8', timeout=15)
+        self.assertEqual(result.returncode, 0, result.stderr)

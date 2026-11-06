@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Install, supervise, update and open a personal Skill Dashboard."""
+"""Install, supervise, update and open a personal MySkills."""
 import argparse
 import json
 import os
@@ -74,7 +74,7 @@ def install(home, source=None, migrate=None, start=True, open_browser=True, shor
             services.configure_shortcut(home, True, directory)
         except (OSError, ValueError, subprocess.SubprocessError) as error:
             # A launcher is convenience; a naming conflict must not break installation.
-            print(f'Skills launcher was not changed: {error}', file=sys.stderr)
+            print(f'MySkills launcher was not changed: {error}', file=sys.stderr)
     if start:
         if migrate:
             services.remove_legacy(migrate)
@@ -289,5 +289,5 @@ if __name__ == '__main__':
     try:
         main()
     except (OSError, ValueError, subprocess.CalledProcessError) as error:
-        print(f'Skill Dashboard: {error}', file=sys.stderr)
+        print(f'MySkills: {error}', file=sys.stderr)
         sys.exit(1)

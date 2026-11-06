@@ -14,6 +14,6 @@ fi
 DASH_PYTHON=$("$DASH_HOME/uv/uv" python find --managed-python 3.12)
 DASH_WORK=$(mktemp -d)
 trap 'rm -rf "$DASH_WORK"' EXIT
-curl --fail --location --silent --show-error https://github.com/jdjuan/skill-dashboard/releases/latest/download/skill-dashboard.zip -o "$DASH_WORK/app.zip"
+curl --fail --location --silent --show-error https://github.com/jdjuan/myskills/releases/latest/download/myskills.zip -o "$DASH_WORK/app.zip"
 /usr/bin/ditto -x -k "$DASH_WORK/app.zip" "$DASH_WORK/app"
 "$DASH_PYTHON" "$DASH_WORK/app/dashboard.py" install --home "$DASH_HOME" "$@"
