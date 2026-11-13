@@ -13,3 +13,11 @@
 - Managed installation data lives outside release files. Preserve catalogs and settings across updates; development checkouts must never auto-update.
 - Native macOS and Windows are supported. Keep runtime, service, Trash/Recycle Bin and usage-log behavior portable; do not claim Windows verification without running there.
 - Release packaging uses an explicit application allowlist. Do not publish, change visibility or rewrite history without explicit authorization.
+
+## Every push to main: refresh the screenshot and the product page (Juan, 13 Nov 2026)
+
+Each time you push MySkills changes to `main`, also update both public showcases so they match the shipped dashboard:
+
+1. Capture the running dashboard at 1500×1000, 2× scale, on the My skills tab: `"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless=new --hide-scrollbars --user-data-dir=<temp dir> --window-size=1500,1000 --force-device-scale-factor=2 --virtual-time-budget=8000 --screenshot=<file>.png http://127.0.0.1:8765/`, check the image, then `cwebp -q 82`.
+2. Replace `docs/screenshot.webp` (the README image) and keep the README alt text accurate.
+3. In `~/CODE/jdjuan.io`, add the image as a new versioned file (`public/myskills/dashboard-vN.webp`, so caches don't serve the old one), point `pages/myskills.tsx` at it (the image, its link and the JSON-LD `screenshot`), and update any page copy or FAQ answer the change made out of date, with the Spanish strings in `content/locales/es.json`. Follow that repo's AGENTS.md for local checks and its standing publish workflow.

@@ -1,6 +1,6 @@
 # MySkills
 
-![MySkills dashboard showing skills organized by category](docs/screenshot.webp)
+![MySkills dashboard showing skills grouped by category, with installed skills marked and one-click updates](docs/screenshot.webp)
 
 A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, AI API key, database or hosting service. The dashboard needs no account; optional GitHub backup uses your own GitHub account.
 
