@@ -81,6 +81,31 @@ class SkillUpdateTests(unittest.TestCase):
         self.assertEqual((self.folder / 'usage.jsonl').read_text(), 'first\nsecond\nthird\n')
         self.assertIsNone(self.updater.record(self.item)['baseline'])
 
+    def test_local_name_and_icon_survive_update(self):
+        (self.folder / 'agents').mkdir()
+        (self.folder / 'agents/openai.yaml').write_text('interface:\n  display_name: "Mine"\n', encoding='utf-8')
+        (self.folder / 'assets').mkdir()
+        (self.folder / 'assets/flaticon.png').write_bytes(b'icon')
+        self.files['agents/openai.yaml'] = b'interface:\n  display_name: "Upstream"\n'
+        token, review = self.checked()
+        self.assertNotIn('agents/openai.yaml', {c['path'] for c in review['changes']})
+        self.assertNotIn('assets/flaticon.png', {c['path'] for c in review['changes']})
+        self.updater.apply(self.item, token)
+        self.assertEqual((self.folder / 'SKILL.md').read_bytes(), self.files['SKILL.md'])
+        self.assertIn('Mine', (self.folder / 'agents/openai.yaml').read_text())
+        self.assertEqual((self.folder / 'assets/flaticon.png').read_bytes(), b'icon')
+
+    def test_renamed_update_shows_new_name(self):
+        (self.folder / 'SKILL.md').write_text('---\nname: old-name\n---\nOld\n', encoding='utf-8')
+        (self.folder / 'agents').mkdir()
+        (self.folder / 'agents/openai.yaml').write_text('interface:\n  display_name: "Old"\n  icon_large: "./assets/flaticon.png"\n', encoding='utf-8')
+        self.files['SKILL.md'] = b'---\nname: new-name\n---\nNew\n'
+        token, _ = self.checked()
+        self.updater.apply(self.item, token)
+        metadata = (self.folder / 'agents/openai.yaml').read_text()
+        self.assertNotIn('display_name', metadata)
+        self.assertIn('icon_large', metadata)
+
     def test_baseline_blocks_local_customizations_without_network(self):
         token, _ = self.checked()
         self.updater.apply(self.item, token)

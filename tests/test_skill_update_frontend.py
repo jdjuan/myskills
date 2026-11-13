@@ -23,12 +23,18 @@ const nice=s=>s.name;
 const notify=message=>notifications.push(message);
 const load=async()=>loads++;
 const render=()=>renders++;
-let catalogRevision='catalog',activeSource='Installed';
+let catalogRevision='catalog',activeSource='Installed',skills=[];
+const collection=()=>'Installed';
 '''
         cases=r'''
 (async()=>{
 const skill={id:'example',name:'Example',skillUpdate:{review:'abc'}};
 await skillUpdateAction(skill);
+assert.deepEqual(requests.at(-1).payload,{action:'apply',id:'example',review:'abc'});
+assert.equal(autoUpdate.get('example'),'applying');
+assert.equal(loads,1);
+skillUpdateState={busy:false};
+await openSkillUpdateReview(skill);
 assert.equal($('skillUpdateDialog').open,true);
 assert.equal($('applySkillUpdate').disabled,true);
 assert.equal($('approveFirstUpdate').hidden,false);
@@ -39,7 +45,7 @@ $('firstUpdateApproved').checked=true;$('firstUpdateApproved').onchange();
 assert.equal($('applySkillUpdate').disabled,false);
 await startSkillUpdate('apply',skill,{review:updateReview.review.token});
 assert.deepEqual(requests.at(-1).payload,{action:'apply',id:'example',review:'abc'});
-assert.equal($('skillUpdateDialog').open,false);assert.equal(loads,1);
+assert.equal($('skillUpdateDialog').open,false);assert.equal(loads,2);
 skillUpdateState={busy:false};review.firstReview=false;
 await openSkillUpdateReview(skill);
 assert.equal($('applySkillUpdate').disabled,false);

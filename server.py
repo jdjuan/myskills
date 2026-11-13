@@ -11,6 +11,7 @@ import re
 import secrets
 import shutil
 import threading
+import time
 import sys
 import socket
 import socketserver
@@ -118,11 +119,17 @@ def read_catalog():
     return storage.catalog(DATA_DIR)
 
 
+def catalog_keys(item):
+    """A skill is known in the catalog by its folder (stable across updates) and by its declared name."""
+    return [key for key in dict.fromkeys([item.get('folder'), item['name']]) if key]
+
+
 def matches_rule(item, rule):
-    if item['name'] in rule.get('excluded_skills', []):
+    keys = catalog_keys(item)
+    if any(key in rule.get('excluded_skills', []) for key in keys):
         return False
     members = [member if isinstance(member, str) else member['name'] for member in rule.get('skills', [])]
-    return item['name'] in members or any(item['name'].startswith(prefix) for prefix in rule.get('prefixes', []))
+    return any(key in members for key in keys) or any(key.startswith(prefix) for key in keys for prefix in rule.get('prefixes', []))
 
 
 def purpose_groups(entries, config=None):
@@ -157,7 +164,7 @@ def purpose_groups(entries, config=None):
             item['groups'].append(group_id)
             members = group.get('skills', [])
             names = [member if isinstance(member, str) else member['name'] for member in members]
-            position = names.index(item['name']) if item['name'] in names else len(names)
+            position = next((names.index(key) for key in catalog_keys(item) if key in names), len(names))
             item['groupOrder'][group_id] = position
             if position < len(members) and isinstance(members[position], dict) and 'step' in members[position]:
                 item['steps'][group_id] = members[position]['step']
@@ -195,13 +202,14 @@ def place_skill(skill_id, group_id, expected=None):
         if target is None and group_id != config['fallback_group']['id']:
             raise ValueError('Choose an existing category.')
         for group in [*config['groups'], *config.get('compact_sections', [])]:
+            keys = catalog_keys(item)
             group['skills'] = [m for m in group.get('skills', [])
-                               if (m if isinstance(m, str) else m['name']) != item['name']]
-            if any(item['name'].startswith(prefix) for prefix in group.get('prefixes', [])):
-                group['excluded_skills'] = list(dict.fromkeys([*group.get('excluded_skills', []), item['name']]))
+                               if (m if isinstance(m, str) else m['name']) not in keys]
+            if any(key.startswith(prefix) for key in keys for prefix in group.get('prefixes', [])):
+                group['excluded_skills'] = list(dict.fromkeys([*group.get('excluded_skills', []), keys[0]]))
         if target:
-            target['excluded_skills'] = [n for n in target.get('excluded_skills', []) if n != item['name']]
-            target.setdefault('skills', []).append(item['name'])
+            target['excluded_skills'] = [n for n in target.get('excluded_skills', []) if n not in catalog_keys(item)]
+            target.setdefault('skills', []).append(catalog_keys(item)[0])
         storage.save_catalog(config, before, DATA_DIR)
         return {'message': 'Skill moved to ' + (target['label'] if target else 'Uncategorized') + '.'}
 
@@ -318,6 +326,39 @@ def picker_name(folder, fallback):
             return value if isinstance(value, str) and value.strip() else fallback
     return fallback
 
+AUTO_CHECK_INTERVAL = 24 * 3600
+
+
+def updatable_skills():
+    entries = skills()
+    purpose_groups(entries)
+    return [item for item in entries if item['source'] == 'Mine' and item.get('origin', {}).get('kind') == 'installed'
+            and item['origin'].get('source') and not item.get('customized')]
+
+
+def auto_check_due(now=None):
+    """Run one quiet check of every updatable skill when the last one is a day old. Returns True if started."""
+    path = DATA_DIR / 'auto-update-check.json'
+    now = time.time() if now is None else now
+    last = (storage.read_json(path) or {}).get('at', 0)
+    if now - last < AUTO_CHECK_INTERVAL:
+        return False
+    items = updatable_skills()
+    if items:
+        skill_updater().submit('check', items)
+    storage.atomic_json(path, {'at': now})
+    return bool(items)
+
+
+def auto_check_loop():
+    while True:
+        try:
+            auto_check_due()
+        except (OSError, ValueError, RuntimeError):
+            pass  # Busy or offline: try again next hour.
+        time.sleep(3600)
+
+
 def lookup_installed_skill(identifier):
     entries = skills()
     purpose_groups(entries)
@@ -403,7 +444,7 @@ def skills():
                 parts = relative.parts
                 plugin = parts[1] if len(parts) > 2 else parts[0]
                 group = 'External'
-            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
+            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, folder=path.parent.name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
     # Collapse identical copies within each origin; retain different versions as distinct entries.
     unique = {}
     for item in found:
@@ -413,6 +454,10 @@ def skills():
         else:
             unique[key]['copies'].extend(item['copies'])
             unique[key]['deletable'] = unique[key]['deletable'] and item['deletable']
+    try:
+        credits = read_catalog().get('installed_skills', {})
+    except (OSError, ValueError):
+        credits = {}
     for item in unique.values():
         if item['source'] == 'System':
             item['origin'] = {'kind': 'system', 'label': 'Built in'}
@@ -422,6 +467,14 @@ def skills():
             item['origin'] = next((installed[str(Path(folder).resolve())] for folder in item['copies']
                                    if str(Path(folder).resolve()) in installed),
                                   {'kind': 'local', 'label': 'Local'})
+        credit_key = next((key for key in catalog_keys(item) if key in credits), None)
+        if item['origin']['kind'] == 'local' and item['source'] == 'Mine' and credit_key:
+            # Installed without a receipt: the catalog records who made it and, when known, its GitHub source.
+            value = credits[credit_key]
+            value = value if isinstance(value, dict) else {'credit': value}
+            item['origin'] = {'kind': 'installed', 'label': 'Installed', 'credit': value['credit'],
+                              **({'source': value['source'], 'url': 'https://github.com/' + value['source']} if value.get('source') else {}),
+                              **({'skillPath': value['skillPath']} if value.get('skillPath') else {})}
         item['usage'] = read_usage(item['copies'])
     return sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin']))
 
@@ -455,10 +508,7 @@ class Handler(BaseHTTPRequestHandler):
                 updater = skill_updater()
                 action = payload.get('action')
                 if action == 'check-all':
-                    entries = skills()
-                    purpose_groups(entries)
-                    items = [item for item in entries if item['source'] == 'Mine' and item.get('origin', {}).get('kind') == 'installed' and not item.get('customized')]
-                    return self.json_response(updater.submit('check', items))
+                    return self.json_response(updater.submit('check', updatable_skills()))
                 if not isinstance(payload.get('id'), str):
                     raise ValueError('Choose an installed skill.')
                 item = lookup_installed_skill(payload['id'])
@@ -523,7 +573,7 @@ class Handler(BaseHTTPRequestHandler):
             entries = skills()
             updater = skill_updater()
             for item in entries:
-                if item.get('origin', {}).get('kind') == 'installed':
+                if item.get('origin', {}).get('kind') == 'installed' and item['origin'].get('source'):
                     item['skillUpdate'] = updater.describe(item)
             config = read_catalog()
             groups = purpose_groups(entries, config)
@@ -567,6 +617,7 @@ if __name__ == '__main__':
         storage.atomic_json(DATA_DIR / 'server.json', {'url': url, 'pid': os.getpid()})
     BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills')])
     BACKUP.start_scheduler()
+    threading.Thread(target=auto_check_loop, daemon=True, name='skill-update-check').start()
     print(f'MySkills: {url}', flush=True)
     try:
         server.serve_forever()

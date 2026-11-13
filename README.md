@@ -1,5 +1,7 @@
 # MySkills
 
+![MySkills dashboard showing skills organized by category](docs/screenshot.webp)
+
 A local dashboard for **your own installed Codex skills**. Browse instructions, organize categories, view recorded usage, and move unwanted skills to your system's Trash or Recycle Bin. No shared skill collection, AI API key, database or hosting service. The dashboard needs no account; optional GitHub backup uses your own GitHub account.
 
 ## Install with Codex
@@ -167,3 +169,7 @@ The dashboard header and browser favicon use the approved yellow-and-black logo.
 ## MySkills naming and compatibility
 
 The product and repository are now MySkills (`jdjuan/myskills`). New search launchers use MySkills; existing launchers remain usable. Installation folders, service identifiers, environment variables, health identifiers, and backup formats retain their original names to preserve existing installations and personal data. Releases include `myskills.zip` and a legacy `skill-dashboard.zip` download for older updaters.
+
+## License
+
+[MIT](LICENSE)

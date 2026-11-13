@@ -2,6 +2,7 @@
 import contextlib
 import hashlib
 import json
+import re
 import os
 from pathlib import Path
 import sys
@@ -114,6 +115,15 @@ def validate_catalog(config):
     customized = config.get('customized_skills', [])
     if not isinstance(customized, list) or not all(isinstance(path, str) and 0 < len(path) <= 4096 for path in customized):
         raise ValueError('Invalid customized skills.')
+    credits = config.get('installed_skills', {})
+    def credit(value):
+        if text(value):
+            return True
+        return (isinstance(value, dict) and text(value.get('credit')) and set(value) <= {'credit', 'source', 'skillPath'}
+                and ('source' not in value or (isinstance(value['source'], str) and re.fullmatch(r'[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+', value['source'])))
+                and ('skillPath' not in value or (text(value['skillPath']) and value['skillPath'].endswith('SKILL.md') and '..' not in value['skillPath'].split('/'))))
+    if not isinstance(credits, dict) or not all(text(k) and credit(v) for k, v in credits.items()):
+        raise ValueError('Invalid installed skills.')
     sections = config.get('compact_sections', [])
     if not isinstance(sections, list):
         raise ValueError('Invalid compact sections.')

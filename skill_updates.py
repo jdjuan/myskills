@@ -27,6 +27,8 @@ SHA = re.compile(r'[a-f0-9]{40}\Z')
 TOKEN = re.compile(r'[a-f0-9]{32}\Z')
 SKIP_FILES = {'usage.jsonl', '.DS_Store'}
 SKIP_DIRS = {'.git', '__pycache__', '.venv', 'node_modules'}
+# Local presentation files (picker name, icon) survive updates: upstream versions are ignored.
+PRESERVED_FILES = {'agents/openai.yaml', 'assets/flaticon.png', 'assets/flaticon.credit.json'}
 
 
 def now():
@@ -62,9 +64,25 @@ def source_spec(repository, path=None, ref=''):
     return {'repository': repository, 'path': path, 'ref': ref}
 
 
+def declared_name(path):
+    """The `name:` in a SKILL.md front matter, or None."""
+    try:
+        text = Path(path).read_text(encoding='utf-8')
+    except (OSError, UnicodeError):
+        return None
+    if not text.startswith('---'):
+        return None
+    for line in text.splitlines()[1:]:
+        if line.strip() == '---':
+            break
+        if line.startswith('name:'):
+            return line[5:].strip().strip('"\'')
+    return None
+
+
 def ignored(name):
     parts = PurePosixPath(name).parts
-    return any(p in SKIP_DIRS for p in parts) or parts[-1] in SKIP_FILES
+    return any(p in SKIP_DIRS for p in parts) or parts[-1] in SKIP_FILES or PurePosixPath(name).as_posix() in PRESERVED_FILES
 
 
 class NoRedirect(urllib.request.HTTPRedirectHandler):
@@ -506,6 +524,17 @@ class Updater:
                 os.link(path, target)
             except OSError:
                 shutil.copy2(path, target)
+        for relative in PRESERVED_FILES:
+            path = Path(source) / relative
+            if path.is_file() and not linked(path):
+                target = Path(destination) / relative
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy2(path, target)
+        # When an update renames the skill, show the new name: drop the locally saved picker name.
+        metadata = Path(destination) / 'agents/openai.yaml'
+        if metadata.is_file() and declared_name(Path(source) / 'SKILL.md') != declared_name(Path(destination) / 'SKILL.md'):
+            lines = metadata.read_text(encoding='utf-8').splitlines(keepends=True)
+            metadata.write_text(''.join(line for line in lines if not line.startswith('  display_name:')), encoding='utf-8')
 
     def finish(self, token):
         work = self.directory / 'skill-update-backups' / token
