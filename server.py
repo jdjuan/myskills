@@ -479,6 +479,8 @@ def broken_links():
             if linked(child) and not child.exists():
                 try:
                     target = os.readlink(child)
+                    # Windows reports link targets with its extended-length prefix.
+                    target = target[4:] if target.startswith('\\\\?\\') else target
                 except OSError:
                     target = ''
                 found.append({'kind': 'broken-link', 'name': child.name, 'path': str(child), 'target': target})
