@@ -516,8 +516,9 @@ class GitHubBackup:
         files, skills, seen, permissions = {}, [], set(), {}
         visited = set()
         protected = [root.resolve() / '.system' for root in self.roots.values()]
-        if 'codex' in self.roots:
-            protected.append(self.roots['codex'].parent.resolve() / 'plugins/cache')
+        for agent in ('codex', 'claude'):
+            if agent in self.roots:
+                protected.append(self.roots[agent].parent.resolve() / 'plugins/cache')
         total = 0
         skipped = 0
         for origin, root in self.roots.items():

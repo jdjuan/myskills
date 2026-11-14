@@ -49,10 +49,10 @@ class FakeGitHub:
             tree = self.tree([{'path': 'README.md', 'sha': self.blob(b'Initial README'), 'mode': '100644', 'type': 'blob'}])
             self.head = 'initial'; self.commits[self.head] = {'tree': {'sha': tree}, 'parents': []}
             return self.metadata()
-        if endpoint == 'repos/example/codex-skills-backup':
+        if endpoint == 'repos/example/skills-backup':
             if not self.exists: raise services.GitHubError(404, 'Not found')
             return self.metadata()
-        prefix = 'repos/example/codex-skills-backup/git/'
+        prefix = 'repos/example/skills-backup/git/'
         if not endpoint.startswith(prefix): raise AssertionError(endpoint)
         route = endpoint[len(prefix):]
         if route == 'ref/heads/main': return {'object': {'sha': self.head}}
@@ -109,7 +109,7 @@ class BackupTests(unittest.TestCase):
         self.backup.api = self.remote.api
 
     def test_private_backup_contains_skills_supporting_files_and_catalog(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         files = self.remote.files()
         self.assertIn('skills/codex/example-skill/SKILL.md', files)
         self.assertIn('skills/codex/example-skill/scripts/run.py', files)
@@ -135,7 +135,7 @@ class BackupTests(unittest.TestCase):
         self.assertGreaterEqual(summary['excludedFiles'], 3)
 
     def test_public_repository_cannot_receive_backup(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         self.remote.private = False
         (self.skill / 'SKILL.md').write_text('changed')
         before = len(self.remote.calls)
@@ -143,14 +143,14 @@ class BackupTests(unittest.TestCase):
         self.assertFalse(any(payload is not None for _, payload, _ in self.remote.calls[before:]))
 
     def test_unchanged_snapshot_creates_no_commit_or_upload(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         head = self.remote.head; before = len(self.remote.calls)
         self.backup.backup()
         self.assertEqual(self.remote.head, head)
         self.assertFalse(any(payload is not None for _, payload, _ in self.remote.calls[before:]))
 
     def test_push_failure_keeps_last_success(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         success = self.backup.config()['lastSuccess']; head = self.remote.head
         (self.skill / 'SKILL.md').write_text('new version')
         self.remote.reject_push = True
@@ -160,14 +160,14 @@ class BackupTests(unittest.TestCase):
 
     def test_refuses_existing_unrelated_repository(self):
         self.remote.api('user/repos', {'private': True})
-        with self.assertRaises(ValueError): self.backup.enable('codex-skills-backup')
+        with self.assertRaises(ValueError): self.backup.enable('skills-backup')
         self.assertEqual(self.remote.files(), {'README.md': b'Initial README'})
 
     def test_restore_missing_files_and_preserve_existing_conflicts(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         asset = self.skill / 'asset.png'; asset.unlink()
         instructions = self.skill / 'SKILL.md'; instructions.write_text('Keep this local edit')
-        self.backup.preview('codex-skills-backup')
+        self.backup.preview('skills-backup')
         preview = self.backup.status()['preview']
         self.assertIn('skills/codex/example-skill/SKILL.md', preview['conflicts'])
         self.backup.restore(preview['id'], overwrite=False)
@@ -175,43 +175,43 @@ class BackupTests(unittest.TestCase):
         self.assertEqual(instructions.read_text(), 'Keep this local edit')
 
     def test_overwrite_keeps_recovery_copy(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         path = self.skill / 'SKILL.md'; original = path.read_bytes(); path.write_text('Local edit')
-        self.backup.preview('codex-skills-backup'); preview = self.backup.status()['preview']
+        self.backup.preview('skills-backup'); preview = self.backup.status()['preview']
         self.backup.restore(preview['id'], overwrite=True)
         self.assertEqual(path.read_bytes(), original)
         recovery = Path(self.backup.status()['recoveryPath']) / 'skills/codex/example-skill/SKILL.md'
         self.assertEqual(recovery.read_text(), 'Local edit')
 
     def test_restore_on_another_computer_uses_its_own_roots(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         other = services.GitHubBackup(self.base / 'second-home', self.base / 'second-data',
                                       [('codex', self.base / 'second-skills'), ('agents', self.base / 'second-agents')])
         other.api = self.remote.api
-        other.preview('codex-skills-backup')
+        other.preview('skills-backup')
         other.restore(other.status()['preview']['id'])
         self.assertTrue((self.base / 'second-skills/example-skill/SKILL.md').exists())
         self.assertTrue((self.base / 'second-data/catalog.json').exists())
 
     def test_restore_rejects_files_changed_after_preview(self):
-        self.backup.enable('codex-skills-backup')
-        self.backup.preview('codex-skills-backup'); preview = self.backup.status()['preview']
+        self.backup.enable('skills-backup')
+        self.backup.preview('skills-backup'); preview = self.backup.status()['preview']
         path = self.skill / 'SKILL.md'; path.write_text('Edit after preview')
         with self.assertRaises(ValueError): self.backup.restore(preview['id'], overwrite=True)
         self.assertEqual(path.read_text(), 'Edit after preview')
 
     def test_restore_rejects_traversal_system_and_symlink_entries(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         for path, mode in [('skills/codex/example-skill/../../outside', '100644'),
                            ('skills/codex/example-skill/.system/SKILL.md', '100644'),
                            ('skills/codex/example-skill/link', '120000')]:
             before = copy.deepcopy(self.remote.commits[self.remote.head])
             self.remote.inject(path, b'bad', mode)
-            with self.assertRaises(ValueError): self.backup.preview('codex-skills-backup')
+            with self.assertRaises(ValueError): self.backup.preview('skills-backup')
             self.remote.commits[self.remote.head] = before
 
     def test_daily_preference_only_changes_when_requested(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         self.backup.submit('configure', {'daily': True}); self.backup.thread.join(timeout=3)
         self.assertTrue(self.backup.config()['daily'])
         self.backup.submit('configure', {'daily': False}); self.backup.thread.join(timeout=3)
@@ -259,7 +259,7 @@ class BackupTests(unittest.TestCase):
 
     def test_daily_scheduler_runs_when_due_and_stays_off_otherwise(self):
         import time
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         config = self.backup.config(); config.update(daily=True, lastSuccess='2000-01-01T00:00:00+00:00')
         self.backup.save_config(config)
         before = len(self.remote.calls)
@@ -273,10 +273,10 @@ class BackupTests(unittest.TestCase):
         self.assertGreater(len(self.remote.calls), before)
 
     def test_restore_refuses_missing_skill_manifest(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         tree = self.remote.trees[self.remote.commits[self.remote.head]['tree']['sha']]
         tree[:] = [item for item in tree if not item['path'].endswith('/SKILL.md')]
-        with self.assertRaises(ValueError): self.backup.preview('codex-skills-backup')
+        with self.assertRaises(ValueError): self.backup.preview('skills-backup')
 
     def test_connect_reuses_cli_login_without_uploading_anything(self):
         import subprocess
@@ -340,9 +340,9 @@ class BackupTests(unittest.TestCase):
     @unittest.skipIf(os.name == 'nt', 'POSIX file permissions')
     def test_restore_preserves_private_file_permissions(self):
         path = self.skill / 'SKILL.md'; path.chmod(0o600)
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         path.unlink()
-        self.backup.preview('codex-skills-backup')
+        self.backup.preview('skills-backup')
         self.backup.restore(self.backup.status()['preview']['id'])
         self.assertEqual(path.stat().st_mode & 0o777, 0o600)
 
@@ -363,18 +363,18 @@ class BackupTests(unittest.TestCase):
         self.assertFalse(any('linked-builtin' in path for path in files))
 
     def test_restore_never_overwrites_a_linked_destination(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         outside = self.base / 'outside'; outside.write_text('untouched')
         asset = self.skill / 'asset.png'; asset.unlink()
         try:
             asset.symlink_to(outside)
         except OSError:
             self.skipTest('Symlinks are unavailable to this user.')
-        with self.assertRaises(ValueError): self.backup.preview('codex-skills-backup')
+        with self.assertRaises(ValueError): self.backup.preview('skills-backup')
         self.assertEqual(outside.read_text(), 'untouched')
 
     def test_text_is_batched_while_binary_files_use_blob_uploads(self):
-        self.backup.enable('codex-skills-backup')
+        self.backup.enable('skills-backup')
         tree_calls = [payload for endpoint, payload, _ in self.remote.calls if endpoint.endswith('/git/trees') and payload]
         self.assertEqual(len(tree_calls), 1)
         entries = {item['path']: item for item in tree_calls[0]['tree']}

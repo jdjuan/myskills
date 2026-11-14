@@ -33,7 +33,10 @@ DATA_DIR = storage.data_home()
 MANAGED = False
 SKILL_UPDATER = None
 BACKUP = None
-ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CODEX / 'plugins/cache', 'Plugin cache')]
+CLAUDE = Path(os.environ.get('CLAUDE_CONFIG_DIR', str(Path.home() / '.claude')))
+# Codex, shared agent and Claude Code skill folders; a folder linked into several roots is listed once.
+ROOTS = [(CODEX / 'skills', 'Personal'), (Path.home() / '.agents/skills', 'Personal'), (CLAUDE / 'skills', 'Personal'),
+         (CODEX / 'plugins/cache', 'Plugin cache'), (CLAUDE / 'plugins/cache', 'Plugin cache')]
 
 class ThreadingHTTPServer(HTTPThreadingServer):
     def server_bind(self):
@@ -99,7 +102,7 @@ def trash_skill(skill_id):
             raise ValueError('Skill location changed. Refresh the library.')
         if os.name == 'nt':
             recycle_windows(folders)
-            return {'message': 'Moved to Recycle Bin. Restart Codex chats to pick up changes.'}
+            return {'message': 'Moved to Recycle Bin. Start a new agent chat to pick up changes.'}
         trash = Path.home() / '.Trash'
         trash.mkdir(exist_ok=True)
         moved = []
@@ -112,7 +115,7 @@ def trash_skill(skill_id):
             for original, destination in reversed(moved):
                 shutil.move(str(destination), str(original))
             raise
-        return {'message': 'Moved to Trash. Restart Codex chats to pick up changes.'}
+        return {'message': 'Moved to Trash. Start a new agent chat to pick up changes.'}
 
 def read_catalog():
     """The sole source for dashboard grouping, ordering, and presentation metadata."""
@@ -615,7 +618,7 @@ if __name__ == '__main__':
     url = f'http://127.0.0.1:{server.server_port}'
     if args.managed:
         storage.atomic_json(DATA_DIR / 'server.json', {'url': url, 'pid': os.getpid()})
-    BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills')])
+    BACKUP = services.GitHubBackup(storage.install_home(), DATA_DIR, [('codex', CODEX / 'skills'), ('agents', Path.home() / '.agents/skills'), ('claude', CLAUDE / 'skills')])
     BACKUP.start_scheduler()
     threading.Thread(target=auto_check_loop, daemon=True, name='skill-update-check').start()
     print(f'MySkills: {url}', flush=True)
