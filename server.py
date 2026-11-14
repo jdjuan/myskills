@@ -415,6 +415,137 @@ def installation_sources():
     return installed
 
 
+def canonical(value):
+    """Compare skill names case-insensitively, treating any run of other characters as one dash."""
+    return re.sub(r'[^a-z0-9]+', '-', str(value or '').lower()).strip('-')
+
+
+def link_source(folder, root):
+    """Where a skill folder really lives when a link below a scanned root points outside every scanned root."""
+    folder = Path(folder)
+    try:
+        relative = folder.relative_to(root)
+    except ValueError:
+        return ''
+    if not any(linked(root.joinpath(*relative.parts[:i])) for i in range(1, len(relative.parts) + 1)):
+        return ''
+    real = folder.resolve()
+    for scanned, _ in ROOTS:
+        try:
+            if real.is_relative_to(scanned.resolve()):
+                return ''
+        except OSError:
+            continue
+    return str(real)
+
+
+def skill_warnings(entries):
+    """Read-only health notes. They never rename, move or relink anything."""
+    personal = [item for item in entries if item['source'] == 'Mine' and not item['plugin']]
+    by_name = {}
+    for item in personal:
+        by_name.setdefault(canonical(item['name']), []).append(item)
+    for item in entries:
+        item['warnings'] = []
+    for item in personal:
+        warnings = item['warnings']
+        labels = [('folder', item['folder']), ('name', item['name']), ('display name', item['displayName'])]
+        if len({canonical(value) for _, value in labels}) > 1:
+            warnings.append({'kind': 'name-mismatch', 'message': 'Names disagree: ' + ', '.join(
+                label + ' “' + value + '”' for label, value in labels) + '. Keep the folder, name: and display_name the same.'})
+        others = [copy for other in by_name[canonical(item['name'])] for copy in other['copies']
+                  if other is not item]
+        if len(item['copies']) > 1 or others:
+            places = list(dict.fromkeys([*item['copies'], *others]))
+            warnings.append({'kind': 'duplicate', 'message': 'The same skill name is in ' + str(len(places)) +
+                             ' places; agents may load either one.', 'paths': places})
+        for target in item.get('linkedFrom', []):
+            warnings.append({'kind': 'foreign-link', 'message': 'Linked from outside your skill folders, so another tool manages it.',
+                             'paths': [target]})
+    return entries
+
+
+def broken_links():
+    """Links in personal skill folders whose target no longer exists."""
+    found = []
+    for root, source in ROOTS:
+        if source != 'Personal' or not root.is_dir():
+            continue
+        try:
+            children = list(root.iterdir())
+        except OSError:
+            continue
+        for child in children:
+            if linked(child) and not child.exists():
+                try:
+                    target = os.readlink(child)
+                except OSError:
+                    target = ''
+                found.append({'kind': 'broken-link', 'name': child.name, 'path': str(child), 'target': target})
+    return sorted(found, key=lambda item: item['path'])
+
+
+def catalog_references(config):
+    """Every skill name the personal catalog lists explicitly, with the places that list it."""
+    references = {}
+    for group in [config['fallback_group'], *config['groups'], *config.get('compact_sections', [])]:
+        for member in group.get('skills', []):
+            references.setdefault(member if isinstance(member, str) else member['name'], []).append(group['label'])
+    for name in config.get('installed_skills', {}):
+        references.setdefault(name, []).append('Installed credits')
+    return references
+
+
+def missing_catalog_entries(entries, config=None):
+    config = config if config is not None else read_catalog()
+    present = {key for item in entries for key in catalog_keys(item)}
+    return [{'kind': 'missing', 'name': name, 'places': list(dict.fromkeys(places))}
+            for name, places in sorted(catalog_references(config).items()) if name not in present]
+
+
+def forget_catalog_entry(name, replacement=None, expected=None):
+    """Drop a skill that no longer exists from the catalog, or hand its places to a renamed skill."""
+    with DELETE_LOCK:
+        entries = skills()
+        if not isinstance(name, str) or any(name in catalog_keys(item) for item in entries):
+            raise ValueError('That skill still exists. Refresh the dashboard.')
+        target = None
+        if replacement is not None:
+            target = next((item for item in entries if item['id'] == replacement and item['source'] == 'Mine' and not item['plugin']), None)
+            if target is None:
+                raise ValueError('Choose an existing personal skill.')
+        config = read_catalog()
+        before = storage.revision(config)
+        if expected != before:
+            raise storage.ConflictError('The catalog changed. Reload before changing it.')
+        if name not in catalog_references(config):
+            raise ValueError('That entry is no longer in your catalog.')
+        new = catalog_keys(target)[0] if target else None
+        for group in [config['fallback_group'], *config['groups'], *config.get('compact_sections', [])]:
+            members, keys = [], set(catalog_keys(target)) if target else set()
+            already = any((m if isinstance(m, str) else m['name']) in keys for m in group.get('skills', []))
+            for member in group.get('skills', []):
+                if (member if isinstance(member, str) else member['name']) != name:
+                    members.append(member)
+                elif new and not already:
+                    members.append(new if isinstance(member, str) else {**member, 'name': new})
+            if 'skills' in group:
+                group['skills'] = members
+            if name in group.get('excluded_skills', []):
+                group['excluded_skills'] = [n for n in group['excluded_skills'] if n != name]
+                if new and new not in group['excluded_skills']:
+                    group['excluded_skills'].append(new)
+        credits = config.get('installed_skills', {})
+        if name in credits:
+            credit = credits.pop(name)
+            if new and not any(key in credits for key in catalog_keys(target)):
+                credits[new] = credit
+        storage.save_catalog(config, before, DATA_DIR)
+        if target:
+            return {'message': 'Catalog places moved to ' + target['displayName'] + '.'}
+        return {'message': '“' + name + '” removed from your catalog.'}
+
+
 def skills():
     found, seen = [], set()
     installed = installation_sources()
@@ -447,7 +578,8 @@ def skills():
                 parts = relative.parts
                 plugin = parts[1] if len(parts) > 2 else parts[0]
                 group = 'External'
-            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, folder=path.parent.name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)]))
+            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, folder=path.parent.name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)],
+                              linkedFrom=[target] if source == 'Personal' and (target := link_source(path.parent, root)) else []))
     # Collapse identical copies within each origin; retain different versions as distinct entries.
     unique = {}
     for item in found:
@@ -457,6 +589,7 @@ def skills():
         else:
             unique[key]['copies'].extend(item['copies'])
             unique[key]['deletable'] = unique[key]['deletable'] and item['deletable']
+            unique[key]['linkedFrom'].extend(item['linkedFrom'])
     try:
         credits = read_catalog().get('installed_skills', {})
     except (OSError, ValueError):
@@ -479,7 +612,7 @@ def skills():
                               **({'source': value['source'], 'url': 'https://github.com/' + value['source']} if value.get('source') else {}),
                               **({'skillPath': value['skillPath']} if value.get('skillPath') else {})}
         item['usage'] = read_usage(item['copies'])
-    return sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin']))
+    return skill_warnings(sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin'])))
 
 class Handler(BaseHTTPRequestHandler):
     def json_response(self, payload, status=200):
@@ -498,7 +631,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup'):
+        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/forget'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -523,6 +656,8 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == '/api/catalog':
                 storage.save_catalog(payload.get('catalog'), payload.get('revision'), DATA_DIR)
                 return self.json_response({'message': 'Organization saved.'})
+            if self.path == '/api/forget':
+                return self.json_response(forget_catalog_entry(payload.get('name'), payload.get('replacement'), payload.get('revision')))
             if self.path == '/api/backup':
                 if BACKUP is None:
                     raise ValueError('GitHub backup is unavailable in this server instance.')
@@ -580,7 +715,8 @@ class Handler(BaseHTTPRequestHandler):
                     item['skillUpdate'] = updater.describe(item)
             config = read_catalog()
             groups = purpose_groups(entries, config)
-            data = json.dumps(dict(skills=entries, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
+            issues = missing_catalog_entries(entries, config) + broken_links()
+            data = json.dumps(dict(skills=entries, issues=issues, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
             mime = 'application/json; charset=utf-8'
         elif route in ('/', '/index.html'):
             data = (BASE / 'dist/index.html').read_bytes()

@@ -24,6 +24,9 @@ class FakeGitHub:
         self.commits = {}
         self.calls = []
         self.reject_push = False
+        self.tree_requests = []
+        self.fail_trees = 0
+        self.max_tree_entries = 10 ** 6
 
     def blob(self, content):
         sha = services.GitHubBackup.blob_sha(content)
@@ -65,7 +68,19 @@ class FakeGitHub:
             content = self.blobs[route.split('/')[-1]]
             return {'content': base64.b64encode(content).decode(), 'size': len(content), 'encoding': 'base64'}
         if route == 'blobs': return {'sha': self.blob(base64.b64decode(payload['content']))}
-        if route == 'trees': return {'sha': self.tree(payload['tree'])}
+        if route == 'trees':
+            self.tree_requests.append(payload)
+            if self.fail_trees:
+                self.fail_trees -= 1; raise services.GitHubError(502, 'Server Error')
+            if len(payload['tree']) > self.max_tree_entries: raise services.GitHubError(502, 'Server Error')
+            entries = {e['path']: e for e in copy.deepcopy(self.trees[payload['base_tree']])} if payload.get('base_tree') else {}
+            for entry in payload['tree']:
+                if 'sha' in entry and entry['sha'] is None:
+                    assert entry['path'] in entries, 'GitHub rejects deleting a missing path'
+                    entries.pop(entry['path'])
+                else:
+                    entries[entry['path']] = {k: v for k, v in entry.items() if k != 'size'}
+            return {'sha': self.tree(sorted(entries.values(), key=lambda e: e['path']))}
         if route == 'commits':
             sha = hashlib.sha1(json.dumps(payload, sort_keys=True).encode()).hexdigest()
             self.commits[sha] = {'tree': {'sha': payload['tree']}, 'parents': payload['parents']}
@@ -382,3 +397,79 @@ class BackupTests(unittest.TestCase):
         self.assertNotIn('sha', entries['skills/codex/example-skill/SKILL.md'])
         self.assertIn('sha', entries['skills/codex/example-skill/asset.png'])
         self.assertNotIn('content', entries['skills/codex/example-skill/asset.png'])
+
+
+class ResilientUploadTests(BackupTests):
+    """Large backups go up in small tree requests, and GitHub's transient 5xx answers are retried."""
+    def setUp(self):
+        super().setUp()
+        self.delays = []
+        self.backup.sleep = self.delays.append
+        # Route through the real api() wrapper so its retry policy is exercised.
+        self.backup.api = services.GitHubBackup.api.__get__(self.backup)
+        # Inheriting BackupTests also reruns every existing backup and restore case through that wrapper.
+        self.backup._run = lambda arguments, payload=None: json.dumps(self.remote.api(
+            arguments[3], payload, arguments[arguments.index('--method') + 1]))
+
+    def test_retries_a_502_then_succeeds(self):
+        self.remote.fail_trees = 2
+        self.backup.enable('skills-backup')
+        self.assertIn('skills/codex/example-skill/SKILL.md', self.remote.files())
+        self.assertEqual(self.delays, list(services.GitHubBackup.RETRY_DELAYS[:2]))
+        self.assertTrue(self.backup.config()['lastSuccess'])
+
+    def test_persistent_502_keeps_last_success_and_head(self):
+        self.backup.enable('skills-backup')
+        success, head = self.backup.config()['lastSuccess'], self.remote.head
+        (self.skill / 'SKILL.md').write_text('new version')
+        self.remote.fail_trees = 99
+        with self.assertRaisesRegex(services.GitHubError, 'Server Error'):
+            self.backup.backup()
+        self.assertEqual(len(self.delays), len(services.GitHubBackup.RETRY_DELAYS))
+        self.assertEqual(self.remote.head, head)
+        self.assertEqual(self.backup.config()['lastSuccess'], success)
+
+    def test_client_errors_are_not_retried(self):
+        calls = []
+        def reject(arguments, payload=None):
+            calls.append(arguments); raise services.GitHubError(422, 'Validation Failed')
+        self.backup._run = reject
+        with self.assertRaises(services.GitHubError): self.backup.api('user')
+        self.assertEqual((len(calls), self.delays), (1, []))
+
+    def test_large_backup_uses_small_layered_trees_and_only_changes(self):
+        for index in range(600):
+            (self.skill / f'reference-{index:03}.md').write_text(f'Reference {index}\n' * 40, encoding='utf-8')
+        self.remote.max_tree_entries = services.GitHubBackup.BATCH_ENTRIES  # A bigger request would 502.
+        self.backup.enable('skills-backup')
+        files = self.remote.files()
+        self.assertEqual(sum(path.startswith('skills/codex/example-skill/reference-') for path in files), 600)
+        self.assertNotIn('README.md', files)  # The new repository's README is removed explicitly.
+        first = self.remote.tree_requests
+        self.assertGreater(len(first), 2)
+        self.assertTrue(all(request['base_tree'] for request in first))
+        # A later run sends only the edit and the deletion, not the 600 unchanged files.
+        self.remote.tree_requests = []
+        (self.skill / 'reference-000.md').write_text('Edited', encoding='utf-8')
+        (self.skill / 'reference-001.md').unlink()
+        self.backup.backup()
+        [request] = self.remote.tree_requests
+        paths = {entry['path']: entry for entry in request['tree']}
+        self.assertEqual(set(paths), {'skills/codex/example-skill/reference-000.md', 'skills/codex/example-skill/reference-001.md', 'backup.json'})
+        self.assertIsNone(paths['skills/codex/example-skill/reference-001.md']['sha'])
+        files = self.remote.files()
+        self.assertEqual(files['skills/codex/example-skill/reference-000.md'], b'Edited')
+        self.assertNotIn('skills/codex/example-skill/reference-001.md', files)
+
+    def test_accepts_a_restored_head_that_differs_from_the_last_recorded_commit(self):
+        self.backup.enable('skills-backup')
+        recorded = self.backup.config()['commit']
+        # Someone restores the same MySkills tree as a new commit on top.
+        restored = 'restored-commit'
+        self.remote.commits[restored] = {'tree': copy.deepcopy(self.remote.commits[recorded]['tree']), 'parents': [recorded]}
+        self.remote.head = restored
+        (self.skill / 'SKILL.md').write_text('after restore')
+        self.backup.backup()
+        self.assertEqual(self.remote.commits[self.remote.head]['parents'], [restored])
+        self.assertEqual(self.remote.files()['skills/codex/example-skill/SKILL.md'], b'after restore')
+

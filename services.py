@@ -300,6 +300,12 @@ class GitHubBackup:
     SKIP_DIRS = {'.git', '.system', 'node_modules', '__pycache__', '.venv', 'venv', '.ssh', '.aws'}
     SKIP_FILES = {'.DS_Store', 'usage.jsonl', 'credentials.json', 'auth.json'}
     DESCRIPTION = 'Private MySkills backups'
+    # GitHub answers large or busy Git Data requests with 5xx; every write here is content-addressed or a
+    # non-forced ref update to the same commit, so repeating it is safe.
+    RETRY_DELAYS = (3, 10, 30)
+    RETRY_STATUSES = {500, 502, 503, 504}
+    BATCH_ENTRIES = 250
+    BATCH_INLINE = 1024 * 1024
 
     def __init__(self, home, directory, roots):
         import threading
@@ -315,6 +321,8 @@ class GitHubBackup:
             self.state.update(message='The previous operation was interrupted. Retry it to continue.', running=False, preview=None)
         self.stop_event = threading.Event()
         self.thread = None
+        import time
+        self.sleep = time.sleep
 
     def config(self):
         import storage
@@ -446,7 +454,15 @@ class GitHubBackup:
         arguments += ['--method', method or ('POST' if payload is not None else 'GET')]
         if payload is not None:
             arguments += ['--input', '-']
-        raw = self._run(arguments, payload)
+        for delay in (*self.RETRY_DELAYS, None):
+            try:
+                raw = self._run(arguments, payload)
+                break
+            except (GitHubError, subprocess.TimeoutExpired) as error:
+                transient = isinstance(error, subprocess.TimeoutExpired) or error.code in self.RETRY_STATUSES
+                if delay is None or not transient:
+                    raise
+                self.sleep(delay)
         return json.loads(raw) if raw.strip() else None
 
     def connect(self):
@@ -585,6 +601,7 @@ class GitHubBackup:
         reference = self.api(f'repos/{repository}/git/ref/heads/' + quote(branch, safe=''))
         head = reference['object']['sha']
         commit = self.api(f'repos/{repository}/git/commits/{head}')
+        self.remote_tree = commit['tree']['sha']
         tree = self.api(f'repos/{repository}/git/trees/{commit["tree"]["sha"]}?recursive=1')
         if tree.get('truncated'):
             raise ValueError('The backup repository is too large to restore completely.')
@@ -665,33 +682,57 @@ class GitHubBackup:
             config['lastSuccess'] = updates.now(); self.save_config(config)
             self.report(message='Everything is already backed up.', summary=summary)
             return
-        tree = []
-        inline_budget = 4 * 1024 * 1024
-        for index, (path, (content, mode)) in enumerate(sorted(files.items()), 1):
-            self.report(message=f'Backing up file {index} of {len(files)}…')
+        import json
+        # Send only what changed, in small tree requests layered on the current tree. One request with
+        # every file in the backup is what GitHub started rejecting with HTTP 502.
+        changes = []
+        for path, (content, mode) in sorted(files.items()):
             sha = desired[path]
-            if os.name == 'nt' and path in previous and previous[path]['sha'] == sha:
-                mode = previous[path]['mode']
+            if path in previous and previous[path]['sha'] == sha:
+                if os.name == 'nt' or previous[path]['mode'] == mode:
+                    continue
+            changes.append((path, content, mode, sha))
+        removed = sorted(set(previous) - set(files))
+        batches, batch, inline = [], [], 0
+        def close():
+            nonlocal batch, inline
+            if batch:
+                batches.append(batch)
+            batch, inline = [], 0
+        for index, (path, content, mode, sha) in enumerate(changes, 1):
             item = {'path': path, 'mode': mode, 'type': 'blob'}
-            if path not in previous or previous[path]['sha'] != sha:
-                # Batch ordinary UTF-8 instructions/scripts into one tree request.
-                # Binary and large files use the blob endpoint instead.
-                import json
+            if path in previous and previous[path]['sha'] == sha:
+                item['sha'] = sha
+            else:
                 try:
                     text = content.decode('utf-8') if b'\0' not in content else None
                 except UnicodeDecodeError:
                     text = None
-                cost = len(json.dumps(text).encode()) if text is not None else inline_budget + 1
-                if text is not None and cost <= min(inline_budget, 1024 * 1024):
+                cost = len(json.dumps(text).encode()) if text is not None else self.BATCH_INLINE + 1
+                if cost <= self.BATCH_INLINE:
+                    if inline + cost > self.BATCH_INLINE:
+                        close()
                     item['content'] = text
-                    inline_budget -= cost
+                    inline += cost
                 else:
+                    # Binary and large files go through the blob endpoint, one at a time.
+                    self.report(message=f'Uploading file {index} of {len(changes)} changed files…')
                     blob = self.api(f'repos/{repository}/git/blobs', {'content': base64.b64encode(content).decode(), 'encoding': 'base64'})
                     item['sha'] = blob['sha']
-            else:
-                item['sha'] = sha
-            tree.append(item)
-        created = self.api(f'repos/{repository}/git/trees', {'tree': tree})
+            batch.append(item)
+            if len(batch) >= self.BATCH_ENTRIES:
+                close()
+        for path in removed:
+            batch.append({'path': path, 'mode': previous[path]['mode'], 'type': 'blob', 'sha': None})
+            if len(batch) >= self.BATCH_ENTRIES:
+                close()
+        close()
+        base_tree = self.remote_tree
+        for number, items in enumerate(batches, 1):
+            self.report(message=f'Saving changes to GitHub, part {number} of {len(batches)} '
+                                f'({len(changes)} changed, {len(removed)} removed files)…')
+            base_tree = self.api(f'repos/{repository}/git/trees', {'base_tree': base_tree, 'tree': items})['sha']
+        created = {'sha': base_tree}
         commit = self.api(f'repos/{repository}/git/commits',
                           {'message': 'Back up personal skills and dashboard catalog', 'tree': created['sha'], 'parents': [head]})
         from urllib.parse import quote
