@@ -191,10 +191,18 @@ def purpose_groups(entries, config=None):
                 break
     return groups
 
-def place_skill(skill_id, group_id, expected=None):
-    """Move a personal skill while retaining category prefix rules for other skills."""
+def member_name(member):
+    return member if isinstance(member, str) else member['name']
+
+
+def place_skill(skill_id, group_id, expected=None, anchor=None, after=False):
+    """Move a personal skill, or reorder it next to another skill of the same category.
+
+    Dropping a skill on a category it already belongs to only changes its position there; moving it
+    elsewhere removes it from its other categories while retaining prefix rules for other skills."""
     with DELETE_LOCK:
-        item = next((s for s in skills() if s['id'] == skill_id), None)
+        entries = skills()
+        item = next((s for s in entries if s['id'] == skill_id), None)
         if item is None or item['source'] != 'Mine' or item['plugin']:
             raise ValueError('Choose an existing personal skill.')
         config = read_catalog()
@@ -204,17 +212,36 @@ def place_skill(skill_id, group_id, expected=None):
         target = next((g for g in config['groups'] if g['id'] == group_id), None)
         if target is None and group_id != config['fallback_group']['id']:
             raise ValueError('Choose an existing category.')
-        for group in [*config['groups'], *config.get('compact_sections', [])]:
-            keys = catalog_keys(item)
-            group['skills'] = [m for m in group.get('skills', [])
-                               if (m if isinstance(m, str) else m['name']) not in keys]
-            if any(key.startswith(prefix) for key in keys for prefix in group.get('prefixes', [])):
+        neighbour = None
+        if anchor is not None:
+            neighbour = next((s for s in entries if s['id'] == anchor and s['source'] == 'Mine' and not s['plugin']), None)
+            if target is None or neighbour is None or neighbour is item or not matches_rule(neighbour, target):
+                raise ValueError('Choose a skill in that category to place this one next to.')
+        keys = catalog_keys(item)
+        reorder = target is not None and matches_rule(item, target)
+        kept = next((m for m in (target or {}).get('skills', []) if member_name(m) in keys), keys[0])
+        for group in ([target] if reorder else [*config['groups'], *config.get('compact_sections', [])]):
+            group['skills'] = [m for m in group.get('skills', []) if member_name(m) not in keys]
+            if not reorder and any(key.startswith(prefix) for key in keys for prefix in group.get('prefixes', [])):
                 group['excluded_skills'] = list(dict.fromkeys([*group.get('excluded_skills', []), keys[0]]))
         if target:
-            target['excluded_skills'] = [n for n in target.get('excluded_skills', []) if n not in catalog_keys(item)]
-            target.setdefault('skills', []).append(catalog_keys(item)[0])
+            target['excluded_skills'] = [n for n in target.get('excluded_skills', []) if n not in keys]
+            members = target.setdefault('skills', [])
+            if neighbour is None:
+                members.append(kept)
+            else:
+                # Prefix-only members have no stored position yet; give them their current (alphabetical) one.
+                listed = {member_name(m) for m in members}
+                implicit = sorted((s for s in entries if s is not item and s['source'] == 'Mine' and not s['plugin']
+                                   and matches_rule(s, target) and not listed & set(catalog_keys(s))),
+                                  key=lambda s: s['name'].lower())
+                members.extend(catalog_keys(s)[0] for s in implicit)
+                names = catalog_keys(neighbour)
+                index = next(i for i, m in enumerate(members) if member_name(m) in names)
+                members.insert(index + 1 if after else index, kept)
         storage.save_catalog(config, before, DATA_DIR)
-        return {'message': 'Skill moved to ' + (target['label'] if target else 'Uncategorized') + '.'}
+        label = target['label'] if target else 'Uncategorized'
+        return {'message': ('Order updated in ' if reorder else 'Skill moved to ') + label + '.'}
 
 
 def customize_skill(skill_id, expected=None):
@@ -842,7 +869,10 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == '/api/place':
                 if not isinstance(payload.get('group'), str):
                     raise ValueError('Invalid category')
-                self.json_response(place_skill(payload['id'], payload['group'], payload.get('revision')))
+                anchor = payload.get('anchor')
+                if anchor is not None and not isinstance(anchor, str):
+                    raise ValueError('Invalid skill')
+                self.json_response(place_skill(payload['id'], payload['group'], payload.get('revision'), anchor, payload.get('after') is True))
             else:
                 self.json_response(trash_skill(payload['id']))
         except storage.ConflictError as error:

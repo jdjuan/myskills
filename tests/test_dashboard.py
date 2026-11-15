@@ -78,6 +78,30 @@ class CatalogTests(IsolatedState):
             self.assertEqual(entries[0]['groups'], ['other'])
             with self.assertRaises(ValueError): server.place_skill('missing', 'tools')
 
+    def test_drag_reorders_within_category_and_keeps_steps(self):
+        items = [dict(entry('draft'), id='d'), dict(entry('revise'), id='r'), dict(entry('tool-a'), id='a'), dict(entry('tool-b'), id='b')]
+        with patch.object(server, 'skills', return_value=items):
+            self.assertIn('Order updated', server.place_skill('d', 'writing', anchor='r', after=True)['message'])
+            self.assertEqual(server.read_catalog()['groups'][0]['skills'], ['revise', {'name': 'draft', 'step': 1}])
+            server.place_skill('b', 'tools', anchor='a')
+            self.assertEqual(server.read_catalog()['groups'][1]['skills'], ['tool-b', 'tool-a'])
+
+    def test_drag_into_another_category_at_a_position(self):
+        value = config(); value['groups'][1]['skills'] = ['draft']
+        storage.atomic_json(self.data / 'catalog.json', value)
+        items = [dict(entry('draft'), id='d'), dict(entry('revise'), id='r'), dict(entry('tool-a'), id='a')]
+        with patch.object(server, 'skills', return_value=items):
+            # Reordering inside one category keeps the skill's other categories.
+            server.place_skill('d', 'tools', anchor='a', after=True)
+            catalog = server.read_catalog()
+            self.assertEqual(catalog['groups'][0]['skills'][0], {'name': 'draft', 'step': 1})
+            self.assertEqual(catalog['groups'][1]['skills'], ['tool-a', 'draft'])
+            server.place_skill('a', 'writing', anchor='r')
+            catalog = server.read_catalog()
+            self.assertEqual(catalog['groups'][0]['skills'], [{'name': 'draft', 'step': 1}, 'tool-a', 'revise'])
+            self.assertEqual(catalog['groups'][1]['excluded_skills'], ['tool-a'])
+            with self.assertRaises(ValueError): server.place_skill('d', 'tools', anchor='r')
+
     def test_conflict_preserves_external_edit(self):
         old = server.read_catalog()
         revision = storage.revision(old)
