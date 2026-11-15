@@ -10,6 +10,18 @@ def linked(path):
     return stat.S_ISLNK(info.st_mode) or bool(getattr(info, 'st_file_attributes', 0) & 0x400)
 
 
+def claude_app_sync(folder):
+    """A `synced/<account>/` folder the Claude desktop app keeps in step with the user's claude.ai skills.
+
+    It rewrites these copies itself, so they are read-only here and never backed up."""
+    folder = Path(folder)
+    try:
+        return folder.name == 'synced' and folder.is_dir() and any(
+            (bucket / 'manifest.json').is_file() for bucket in folder.iterdir() if bucket.is_dir())
+    except OSError:
+        return False
+
+
 def log_fd(path, write=False):
     path = Path(path)
     if os.name != 'nt':

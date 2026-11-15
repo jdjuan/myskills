@@ -473,3 +473,18 @@ class ResilientUploadTests(BackupTests):
         self.assertEqual(self.remote.commits[self.remote.head]['parents'], [restored])
         self.assertEqual(self.remote.files()['skills/codex/example-skill/SKILL.md'], b'after restore')
 
+
+
+class ClaudeAppSyncBackupTests(unittest.TestCase):
+    def test_backup_skips_claude_app_synced_skills(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / 'skills'
+            for folder in (root / 'mine', root / 'synced/account-1/docx'):
+                folder.mkdir(parents=True)
+                (folder / 'SKILL.md').write_text('---\nname: ' + folder.name + '\n---\nBody', encoding='utf-8')
+            (root / 'synced/account-1/manifest.json').write_text('{}', encoding='utf-8')
+            backup = services.GitHubBackup(Path(directory) / 'home', Path(directory) / 'data', [('agents', root)])
+            files, summary = backup.collect()
+            self.assertIn('skills/agents/mine/SKILL.md', files)
+            self.assertFalse(any('synced' in path for path in files))
+            self.assertEqual(summary['skills'], 1)

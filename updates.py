@@ -14,6 +14,9 @@ REPOSITORY = 'jdjuan/myskills'
 ASSET = 'myskills.zip'
 FILES = {'server.py', 'usage.py', 'portable.py', 'storage.py', 'updates.py', 'dashboard.py',
          'services.py', 'skill_updates.py', 'catalog.json', 'VERSION', 'dist/index.html', 'README.md'}
+# Bundled default icons (Microsoft Fluent Emoji, MIT) ship inside every release.
+FILES |= {'icons/fluent/' + path.name for path in (Path(__file__).resolve().parent / 'icons/fluent').glob('*')
+          if path.is_file()}
 
 
 def now():
@@ -95,9 +98,13 @@ def download_release(home, version, url):
         payload = work / 'app'
         payload.mkdir()
         with zipfile.ZipFile(archive) as bundle:
-            # Only application files can be extracted, never user data or paths outside the release.
-            names = bundle.namelist()
-            if set(names) != FILES or len(names) != len(FILES):
+            # Releases may add files; only paths that stay inside the release folder are extracted.
+            names = [name for name in bundle.namelist() if not name.endswith('/')]
+            for name in names:
+                parts = name.split('/')
+                if not name or name.startswith('/') or '\\' in name or ':' in name or '..' in parts:
+                    raise ValueError('Unsafe path in dashboard release archive.')
+            if 'server.py' not in names or 'VERSION' not in names:
                 raise ValueError('Incomplete dashboard release archive.')
             for name in names:
                 target = payload / name

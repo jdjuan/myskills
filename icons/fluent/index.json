@@ -1,0 +1,5231 @@
+{
+ "source": "https://github.com/microsoft/fluentui-emoji",
+ "license": "MIT",
+ "author": "Microsoft",
+ "icons": [
+  {
+   "file": "laptop.png",
+   "name": "Laptop",
+   "glyph": "💻",
+   "keywords": [
+    "computer",
+    "laptop",
+    "pc",
+    "personal"
+   ],
+   "tags": [
+    "code",
+    "coding",
+    "developer",
+    "programming",
+    "app",
+    "build",
+    "software",
+    "frontend",
+    "web"
+   ]
+  },
+  {
+   "file": "desktop_computer.png",
+   "name": "Desktop computer",
+   "glyph": "🖥️",
+   "keywords": [
+    "computer",
+    "desktop"
+   ],
+   "tags": [
+    "computer",
+    "desktop",
+    "workstation",
+    "local",
+    "machine"
+   ]
+  },
+  {
+   "file": "keyboard.png",
+   "name": "Keyboard",
+   "glyph": "⌨️",
+   "keywords": [
+    "computer",
+    "keyboard"
+   ],
+   "tags": [
+    "shortcut",
+    "shortcuts",
+    "keybinding",
+    "hotkey",
+    "typing"
+   ]
+  },
+  {
+   "file": "computer_mouse.png",
+   "name": "Computer mouse",
+   "glyph": "🖱️",
+   "keywords": [
+    "computer",
+    "computer mouse"
+   ],
+   "tags": [
+    "click",
+    "ui",
+    "interaction"
+   ]
+  },
+  {
+   "file": "gear.png",
+   "name": "Gear",
+   "glyph": "⚙️",
+   "keywords": [
+    "cog",
+    "cogwheel",
+    "gear",
+    "tool"
+   ],
+   "tags": [
+    "settings",
+    "config",
+    "configuration",
+    "setup",
+    "service",
+    "automation",
+    "system"
+   ]
+  },
+  {
+   "file": "hammer_and_wrench.png",
+   "name": "Hammer and wrench",
+   "glyph": "🛠️",
+   "keywords": [
+    "hammer",
+    "hammer and wrench",
+    "spanner",
+    "tool",
+    "wrench"
+   ],
+   "tags": [
+    "build",
+    "fix",
+    "repair",
+    "tools",
+    "maintenance",
+    "devops"
+   ]
+  },
+  {
+   "file": "wrench.png",
+   "name": "Wrench",
+   "glyph": "🔧",
+   "keywords": [
+    "spanner",
+    "tool",
+    "wrench"
+   ],
+   "tags": [
+    "fix",
+    "repair",
+    "troubleshoot"
+   ]
+  },
+  {
+   "file": "toolbox.png",
+   "name": "Toolbox",
+   "glyph": "🧰",
+   "keywords": [
+    "chest",
+    "mechanic",
+    "tool",
+    "toolbox"
+   ],
+   "tags": [
+    "tools",
+    "toolkit",
+    "utilities"
+   ]
+  },
+  {
+   "file": "nut_and_bolt.png",
+   "name": "Nut and bolt",
+   "glyph": "🔩",
+   "keywords": [
+    "bolt",
+    "nut",
+    "nut and bolt",
+    "tool"
+   ],
+   "tags": [
+    "engineering",
+    "mechanics",
+    "hardware"
+   ]
+  },
+  {
+   "file": "electric_plug.png",
+   "name": "Electric plug",
+   "glyph": "🔌",
+   "keywords": [
+    "electric",
+    "electricity",
+    "plug"
+   ],
+   "tags": [
+    "plugin",
+    "integration",
+    "connector",
+    "connect",
+    "mcp",
+    "api"
+   ]
+  },
+  {
+   "file": "link.png",
+   "name": "Link",
+   "glyph": "🔗",
+   "keywords": [
+    "link"
+   ],
+   "tags": [
+    "link",
+    "url",
+    "connect",
+    "chain",
+    "integration"
+   ]
+  },
+  {
+   "file": "package.png",
+   "name": "Package",
+   "glyph": "📦",
+   "keywords": [
+    "box",
+    "package",
+    "parcel"
+   ],
+   "tags": [
+    "package",
+    "release",
+    "ship",
+    "install",
+    "bundle",
+    "deploy",
+    "dependency"
+   ]
+  },
+  {
+   "file": "rocket.png",
+   "name": "Rocket",
+   "glyph": "🚀",
+   "keywords": [
+    "rocket",
+    "space"
+   ],
+   "tags": [
+    "launch",
+    "deploy",
+    "ship",
+    "startup",
+    "release",
+    "fast",
+    "hunt",
+    "producthunt"
+   ]
+  },
+  {
+   "file": "satellite_antenna.png",
+   "name": "Satellite antenna",
+   "glyph": "📡",
+   "keywords": [
+    "antenna",
+    "dish",
+    "satellite"
+   ],
+   "tags": [
+    "server",
+    "network",
+    "api",
+    "remote",
+    "broadcast",
+    "signal"
+   ]
+  },
+  {
+   "file": "satellite.png",
+   "name": "Satellite",
+   "glyph": "🛰️",
+   "keywords": [
+    "satellite",
+    "space"
+   ],
+   "tags": [
+    "monitoring",
+    "observability",
+    "telemetry",
+    "uptime",
+    "checks"
+   ]
+  },
+  {
+   "file": "bug.png",
+   "name": "Bug",
+   "glyph": "🐛",
+   "keywords": [
+    "bug",
+    "insect"
+   ],
+   "tags": [
+    "bug",
+    "debug",
+    "error",
+    "defect",
+    "sentry",
+    "crash"
+   ]
+  },
+  {
+   "file": "lady_beetle.png",
+   "name": "Lady beetle",
+   "glyph": "🐞",
+   "keywords": [
+    "beetle",
+    "insect",
+    "lady beetle",
+    "ladybird",
+    "ladybug"
+   ],
+   "tags": [
+    "bug",
+    "test",
+    "testing",
+    "qa"
+   ]
+  },
+  {
+   "file": "test_tube.png",
+   "name": "Test tube",
+   "glyph": "🧪",
+   "keywords": [
+    "chemist",
+    "chemistry",
+    "experiment",
+    "lab",
+    "science",
+    "test tube"
+   ],
+   "tags": [
+    "test",
+    "testing",
+    "experiment",
+    "lab"
+   ]
+  },
+  {
+   "file": "alembic.png",
+   "name": "Alembic",
+   "glyph": "⚗️",
+   "keywords": [
+    "alembic",
+    "chemistry",
+    "tool"
+   ],
+   "tags": [
+    "experiment",
+    "chemistry",
+    "transform"
+   ]
+  },
+  {
+   "file": "microscope.png",
+   "name": "Microscope",
+   "glyph": "🔬",
+   "keywords": [
+    "microscope",
+    "science",
+    "tool"
+   ],
+   "tags": [
+    "inspect",
+    "analyze",
+    "detail",
+    "audit"
+   ]
+  },
+  {
+   "file": "dna.png",
+   "name": "Dna",
+   "glyph": "🧬",
+   "keywords": [
+    "biologist",
+    "dna",
+    "evolution",
+    "gene",
+    "genetics",
+    "life"
+   ],
+   "tags": [
+    "core",
+    "structure",
+    "genetics"
+   ]
+  },
+  {
+   "file": "robot.png",
+   "name": "Robot",
+   "glyph": "🤖",
+   "keywords": [
+    "face",
+    "monster",
+    "robot"
+   ],
+   "tags": [
+    "ai",
+    "agent",
+    "bot",
+    "automation",
+    "llm",
+    "assistant",
+    "claude",
+    "model"
+   ]
+  },
+  {
+   "file": "brain.png",
+   "name": "Brain",
+   "glyph": "🧠",
+   "keywords": [
+    "brain",
+    "intelligent"
+   ],
+   "tags": [
+    "think",
+    "thinking",
+    "intelligence",
+    "memory",
+    "ai",
+    "mind",
+    "learn"
+   ]
+  },
+  {
+   "file": "mechanical_arm.png",
+   "name": "Mechanical arm",
+   "glyph": "🦾",
+   "keywords": [
+    "accessibility",
+    "mechanical arm",
+    "prosthetic"
+   ],
+   "tags": [
+    "automation",
+    "robot",
+    "workflow"
+   ]
+  },
+  {
+   "file": "puzzle_piece.png",
+   "name": "Puzzle piece",
+   "glyph": "🧩",
+   "keywords": [
+    "clue",
+    "interlocking",
+    "jigsaw",
+    "piece",
+    "puzzle"
+   ],
+   "tags": [
+    "plugin",
+    "extension",
+    "skill",
+    "integration",
+    "puzzle"
+   ]
+  },
+  {
+   "file": "control_knobs.png",
+   "name": "Control knobs",
+   "glyph": "🎛️",
+   "keywords": [
+    "control",
+    "knobs",
+    "music"
+   ],
+   "tags": [
+    "control",
+    "settings",
+    "tune",
+    "adjust"
+   ]
+  },
+  {
+   "file": "level_slider.png",
+   "name": "Level slider",
+   "glyph": "🎚️",
+   "keywords": [
+    "level",
+    "music",
+    "slider"
+   ],
+   "tags": [
+    "settings",
+    "adjust",
+    "tune"
+   ]
+  },
+  {
+   "file": "battery.png",
+   "name": "Battery",
+   "glyph": "🔋",
+   "keywords": [
+    "battery"
+   ],
+   "tags": [
+    "power",
+    "energy"
+   ]
+  },
+  {
+   "file": "floppy_disk.png",
+   "name": "Floppy disk",
+   "glyph": "💾",
+   "keywords": [
+    "computer",
+    "disk",
+    "floppy"
+   ],
+   "tags": [
+    "save",
+    "backup",
+    "storage",
+    "disk"
+   ]
+  },
+  {
+   "file": "computer_disk.png",
+   "name": "Computer disk",
+   "glyph": "💽",
+   "keywords": [
+    "computer",
+    "disk",
+    "minidisk",
+    "optical"
+   ],
+   "tags": [
+    "storage",
+    "disk",
+    "data"
+   ]
+  },
+  {
+   "file": "card_file_box.png",
+   "name": "Card file box",
+   "glyph": "🗃️",
+   "keywords": [
+    "box",
+    "card",
+    "file"
+   ],
+   "tags": [
+    "archive",
+    "database",
+    "records",
+    "storage"
+   ]
+  },
+  {
+   "file": "file_cabinet.png",
+   "name": "File cabinet",
+   "glyph": "🗄️",
+   "keywords": [
+    "cabinet",
+    "file",
+    "filing"
+   ],
+   "tags": [
+    "archive",
+    "files",
+    "storage",
+    "records"
+   ]
+  },
+  {
+   "file": "file_folder.png",
+   "name": "File folder",
+   "glyph": "📁",
+   "keywords": [
+    "file",
+    "folder"
+   ],
+   "tags": [
+    "folder",
+    "files",
+    "directory",
+    "project",
+    "repository",
+    "repo"
+   ]
+  },
+  {
+   "file": "open_file_folder.png",
+   "name": "Open file folder",
+   "glyph": "📂",
+   "keywords": [
+    "file",
+    "folder",
+    "open"
+   ],
+   "tags": [
+    "folder",
+    "files",
+    "directory",
+    "open"
+   ]
+  },
+  {
+   "file": "wastebasket.png",
+   "name": "Wastebasket",
+   "glyph": "🗑️",
+   "keywords": [
+    "wastebasket"
+   ],
+   "tags": [
+    "delete",
+    "trash",
+    "remove",
+    "clean",
+    "cleanup"
+   ]
+  },
+  {
+   "file": "broom.png",
+   "name": "Broom",
+   "glyph": "🧹",
+   "keywords": [
+    "broom",
+    "cleaning",
+    "sweeping",
+    "witch"
+   ],
+   "tags": [
+    "clean",
+    "cleanup",
+    "tidy",
+    "remove",
+    "sweep"
+   ]
+  },
+  {
+   "file": "recycling_symbol.png",
+   "name": "Recycling symbol",
+   "glyph": "♻️",
+   "keywords": [
+    "recycle",
+    "recycling symbol"
+   ],
+   "tags": [
+    "recycle",
+    "reuse",
+    "refresh",
+    "update",
+    "sync"
+   ]
+  },
+  {
+   "file": "counterclockwise_arrows_button.png",
+   "name": "Counterclockwise arrows button",
+   "glyph": "🔄",
+   "keywords": [
+    "anticlockwise",
+    "arrow",
+    "counterclockwise",
+    "counterclockwise arrows button",
+    "withershins"
+   ],
+   "tags": [
+    "sync",
+    "refresh",
+    "update",
+    "reload"
+   ]
+  },
+  {
+   "file": "repeat_button.png",
+   "name": "Repeat button",
+   "glyph": "🔁",
+   "keywords": [
+    "arrow",
+    "clockwise",
+    "repeat",
+    "repeat button"
+   ],
+   "tags": [
+    "loop",
+    "repeat",
+    "recurring",
+    "schedule"
+   ]
+  },
+  {
+   "file": "shuffle_tracks_button.png",
+   "name": "Shuffle tracks button",
+   "glyph": "🔀",
+   "keywords": [
+    "arrow",
+    "crossed",
+    "shuffle tracks button"
+   ],
+   "tags": [
+    "random",
+    "shuffle"
+   ]
+  },
+  {
+   "file": "high_voltage.png",
+   "name": "High voltage",
+   "glyph": "⚡",
+   "keywords": [
+    "danger",
+    "electric",
+    "high voltage",
+    "lightning",
+    "voltage",
+    "zap"
+   ],
+   "tags": [
+    "fast",
+    "performance",
+    "speed",
+    "power",
+    "quick"
+   ]
+  },
+  {
+   "file": "stopwatch.png",
+   "name": "Stopwatch",
+   "glyph": "⏱️",
+   "keywords": [
+    "clock",
+    "stopwatch"
+   ],
+   "tags": [
+    "speed",
+    "performance",
+    "timing",
+    "benchmark",
+    "web",
+    "vitals"
+   ]
+  },
+  {
+   "file": "alarm_clock.png",
+   "name": "Alarm clock",
+   "glyph": "⏰",
+   "keywords": [
+    "alarm",
+    "clock"
+   ],
+   "tags": [
+    "reminder",
+    "alarm",
+    "schedule",
+    "wake"
+   ]
+  },
+  {
+   "file": "hourglass_not_done.png",
+   "name": "Hourglass not done",
+   "glyph": "⏳",
+   "keywords": [
+    "hourglass",
+    "hourglass not done",
+    "sand",
+    "timer"
+   ],
+   "tags": [
+    "wait",
+    "pending",
+    "timer"
+   ]
+  },
+  {
+   "file": "timer_clock.png",
+   "name": "Timer clock",
+   "glyph": "⏲️",
+   "keywords": [
+    "clock",
+    "timer"
+   ],
+   "tags": [
+    "timer",
+    "schedule",
+    "cron"
+   ]
+  },
+  {
+   "file": "watch.png",
+   "name": "Watch",
+   "glyph": "⌚",
+   "keywords": [
+    "clock",
+    "watch"
+   ],
+   "tags": [
+    "time",
+    "clock"
+   ]
+  },
+  {
+   "file": "construction.png",
+   "name": "Construction",
+   "glyph": "🚧",
+   "keywords": [
+    "barrier",
+    "construction"
+   ],
+   "tags": [
+    "construction",
+    "build",
+    "wip",
+    "setup",
+    "scaffold"
+   ]
+  },
+  {
+   "file": "building_construction.png",
+   "name": "Building construction",
+   "glyph": "🏗️",
+   "keywords": [
+    "building construction",
+    "construction"
+   ],
+   "tags": [
+    "build",
+    "construct",
+    "architecture"
+   ]
+  },
+  {
+   "file": "brick.png",
+   "name": "Brick",
+   "glyph": "🧱",
+   "keywords": [
+    "brick",
+    "bricks",
+    "clay",
+    "mortar",
+    "wall"
+   ],
+   "tags": [
+    "block",
+    "component",
+    "building"
+   ]
+  },
+  {
+   "file": "classical_building.png",
+   "name": "Classical building",
+   "glyph": "🏛️",
+   "keywords": [
+    "classical",
+    "classical building"
+   ],
+   "tags": [
+    "legal",
+    "law",
+    "institution",
+    "government"
+   ]
+  },
+  {
+   "file": "bank.png",
+   "name": "Bank",
+   "glyph": "🏦",
+   "keywords": [
+    "bank",
+    "building"
+   ],
+   "tags": [
+    "bank",
+    "finance",
+    "money",
+    "payment"
+   ]
+  },
+  {
+   "file": "factory.png",
+   "name": "Factory",
+   "glyph": "🏭",
+   "keywords": [
+    "building",
+    "factory"
+   ],
+   "tags": [
+    "production",
+    "manufacturing",
+    "pipeline",
+    "generate",
+    "batch"
+   ]
+  },
+  {
+   "file": "office_building.png",
+   "name": "Office building",
+   "glyph": "🏢",
+   "keywords": [
+    "building",
+    "office building"
+   ],
+   "tags": [
+    "company",
+    "business",
+    "office",
+    "enterprise"
+   ]
+  },
+  {
+   "file": "house.png",
+   "name": "House",
+   "glyph": "🏠",
+   "keywords": [
+    "home",
+    "house"
+   ],
+   "tags": [
+    "home",
+    "local"
+   ]
+  },
+  {
+   "file": "window.png",
+   "name": "Window",
+   "glyph": "🪟",
+   "keywords": [
+    "frame",
+    "fresh air",
+    "opening",
+    "transparent",
+    "view",
+    "window"
+   ],
+   "tags": [
+    "window",
+    "app",
+    "desktop"
+   ]
+  },
+  {
+   "file": "door.png",
+   "name": "Door",
+   "glyph": "🚪",
+   "keywords": [
+    "door"
+   ],
+   "tags": [
+    "door",
+    "entry",
+    "exit",
+    "access"
+   ]
+  },
+  {
+   "file": "key.png",
+   "name": "Key",
+   "glyph": "🔑",
+   "keywords": [
+    "key",
+    "lock",
+    "password"
+   ],
+   "tags": [
+    "key",
+    "auth",
+    "authentication",
+    "oauth",
+    "login",
+    "credential",
+    "access",
+    "token"
+   ]
+  },
+  {
+   "file": "old_key.png",
+   "name": "Old key",
+   "glyph": "🗝️",
+   "keywords": [
+    "clue",
+    "key",
+    "lock",
+    "old"
+   ],
+   "tags": [
+    "legacy",
+    "key"
+   ]
+  },
+  {
+   "file": "locked.png",
+   "name": "Locked",
+   "glyph": "🔒",
+   "keywords": [
+    "closed",
+    "locked"
+   ],
+   "tags": [
+    "security",
+    "lock",
+    "private",
+    "protect",
+    "secure"
+   ]
+  },
+  {
+   "file": "locked_with_key.png",
+   "name": "Locked with key",
+   "glyph": "🔐",
+   "keywords": [
+    "closed",
+    "key",
+    "lock",
+    "locked with key",
+    "secure"
+   ],
+   "tags": [
+    "security",
+    "auth",
+    "authentication",
+    "secure",
+    "oauth"
+   ]
+  },
+  {
+   "file": "unlocked.png",
+   "name": "Unlocked",
+   "glyph": "🔓",
+   "keywords": [
+    "lock",
+    "open",
+    "unlock",
+    "unlocked"
+   ],
+   "tags": [
+    "unlock",
+    "open",
+    "access"
+   ]
+  },
+  {
+   "file": "shield.png",
+   "name": "Shield",
+   "glyph": "🛡️",
+   "keywords": [
+    "shield",
+    "weapon"
+   ],
+   "tags": [
+    "security",
+    "protect",
+    "defense",
+    "audit",
+    "safe"
+   ]
+  },
+  {
+   "file": "police_car_light.png",
+   "name": "Police car light",
+   "glyph": "🚨",
+   "keywords": [
+    "beacon",
+    "car",
+    "light",
+    "police",
+    "revolving"
+   ],
+   "tags": [
+    "alert",
+    "incident",
+    "alarm",
+    "emergency",
+    "failure",
+    "failed",
+    "failures",
+    "failing"
+   ]
+  },
+  {
+   "file": "warning.png",
+   "name": "Warning",
+   "glyph": "⚠️",
+   "keywords": [
+    "warning"
+   ],
+   "tags": [
+    "warning",
+    "alert",
+    "caution",
+    "risk"
+   ]
+  },
+  {
+   "file": "stop_sign.png",
+   "name": "Stop sign",
+   "glyph": "🛑",
+   "keywords": [
+    "octagonal",
+    "sign",
+    "stop"
+   ],
+   "tags": [
+    "stop",
+    "block",
+    "halt"
+   ]
+  },
+  {
+   "file": "prohibited.png",
+   "name": "Prohibited",
+   "glyph": "🚫",
+   "keywords": [
+    "entry",
+    "forbidden",
+    "no",
+    "not",
+    "prohibited"
+   ],
+   "tags": [
+    "forbidden",
+    "block",
+    "deny"
+   ]
+  },
+  {
+   "file": "check_mark_button.png",
+   "name": "Check mark button",
+   "glyph": "✅",
+   "keywords": [
+    "button",
+    "check",
+    "mark",
+    "✓"
+   ],
+   "tags": [
+    "done",
+    "check",
+    "verify",
+    "approve",
+    "complete",
+    "task",
+    "todo"
+   ]
+  },
+  {
+   "file": "check_box_with_check.png",
+   "name": "Check box with check",
+   "glyph": "☑️",
+   "keywords": [
+    "box",
+    "check",
+    "check box with check",
+    "✓"
+   ],
+   "tags": [
+    "todo",
+    "checklist",
+    "task",
+    "tasks",
+    "done"
+   ]
+  },
+  {
+   "file": "cross_mark.png",
+   "name": "Cross mark",
+   "glyph": "❌",
+   "keywords": [
+    "cancel",
+    "cross",
+    "mark",
+    "multiplication",
+    "multiply",
+    "x",
+    "×"
+   ],
+   "tags": [
+    "reject",
+    "fail",
+    "cancel",
+    "error"
+   ]
+  },
+  {
+   "file": "red_question_mark.png",
+   "name": "Red question mark",
+   "glyph": "❓",
+   "keywords": [
+    "?",
+    "mark",
+    "punctuation",
+    "question",
+    "red question mark"
+   ],
+   "tags": [
+    "question",
+    "help",
+    "faq",
+    "unknown"
+   ]
+  },
+  {
+   "file": "red_exclamation_mark.png",
+   "name": "Red exclamation mark",
+   "glyph": "❗",
+   "keywords": [
+    "!",
+    "exclamation",
+    "mark",
+    "punctuation",
+    "red exclamation mark"
+   ],
+   "tags": [
+    "important",
+    "alert"
+   ]
+  },
+  {
+   "file": "information.png",
+   "name": "Information",
+   "glyph": "ℹ️",
+   "keywords": [
+    "i",
+    "information"
+   ],
+   "tags": [
+    "info",
+    "information",
+    "help",
+    "docs"
+   ]
+  },
+  {
+   "file": "light_bulb.png",
+   "name": "Light bulb",
+   "glyph": "💡",
+   "keywords": [
+    "bulb",
+    "comic",
+    "electric",
+    "idea",
+    "light"
+   ],
+   "tags": [
+    "idea",
+    "ideas",
+    "brainstorm",
+    "insight",
+    "tip",
+    "concept",
+    "opportunity"
+   ]
+  },
+  {
+   "file": "magnet.png",
+   "name": "Magnet",
+   "glyph": "🧲",
+   "keywords": [
+    "attraction",
+    "horseshoe",
+    "magnet",
+    "magnetic"
+   ],
+   "tags": [
+    "attract",
+    "lead",
+    "capture"
+   ]
+  },
+  {
+   "file": "bullseye.png",
+   "name": "Bullseye",
+   "glyph": "🎯",
+   "keywords": [
+    "bullseye",
+    "dart",
+    "direct hit",
+    "game",
+    "hit",
+    "target"
+   ],
+   "tags": [
+    "target",
+    "goal",
+    "focus",
+    "aim",
+    "conversion",
+    "cro",
+    "accuracy"
+   ]
+  },
+  {
+   "file": "compass.png",
+   "name": "Compass",
+   "glyph": "🧭",
+   "keywords": [
+    "compass",
+    "magnetic",
+    "navigation",
+    "orienteering"
+   ],
+   "tags": [
+    "direction",
+    "navigate",
+    "strategy",
+    "explore",
+    "guide"
+   ]
+  },
+  {
+   "file": "world_map.png",
+   "name": "World map",
+   "glyph": "🗺️",
+   "keywords": [
+    "map",
+    "world"
+   ],
+   "tags": [
+    "map",
+    "plan",
+    "roadmap"
+   ]
+  },
+  {
+   "file": "globe_with_meridians.png",
+   "name": "Globe with meridians",
+   "glyph": "🌐",
+   "keywords": [
+    "earth",
+    "globe",
+    "globe with meridians",
+    "meridians",
+    "world"
+   ],
+   "tags": [
+    "web",
+    "internet",
+    "website",
+    "global",
+    "www",
+    "domain"
+   ]
+  },
+  {
+   "file": "globe_showing_americas.png",
+   "name": "Globe showing americas",
+   "glyph": "🌎",
+   "keywords": [
+    "Americas",
+    "earth",
+    "globe",
+    "globe showing Americas",
+    "world"
+   ],
+   "tags": [
+    "world",
+    "global",
+    "international"
+   ]
+  },
+  {
+   "file": "telescope.png",
+   "name": "Telescope",
+   "glyph": "🔭",
+   "keywords": [
+    "science",
+    "telescope",
+    "tool"
+   ],
+   "tags": [
+    "discover",
+    "explore",
+    "research",
+    "search",
+    "vision"
+   ]
+  },
+  {
+   "file": "crystal_ball.png",
+   "name": "Crystal ball",
+   "glyph": "🔮",
+   "keywords": [
+    "ball",
+    "crystal",
+    "fairy tale",
+    "fantasy",
+    "fortune",
+    "tool"
+   ],
+   "tags": [
+    "predict",
+    "forecast",
+    "future"
+   ]
+  },
+  {
+   "file": "magic_wand.png",
+   "name": "Magic wand",
+   "glyph": "🪄",
+   "keywords": [
+    "magic",
+    "magic wand",
+    "witch",
+    "wizard"
+   ],
+   "tags": [
+    "magic",
+    "generate",
+    "transform",
+    "auto",
+    "ai",
+    "create"
+   ]
+  },
+  {
+   "file": "sparkles.png",
+   "name": "Sparkles",
+   "glyph": "✨",
+   "keywords": [
+    "*",
+    "sparkle",
+    "sparkles",
+    "star"
+   ],
+   "tags": [
+    "new",
+    "sparkle",
+    "magic",
+    "polish",
+    "shine",
+    "ai"
+   ]
+  },
+  {
+   "file": "star.png",
+   "name": "Star",
+   "glyph": "⭐",
+   "keywords": [
+    "star"
+   ],
+   "tags": [
+    "star",
+    "favorite",
+    "rating",
+    "review"
+   ]
+  },
+  {
+   "file": "glowing_star.png",
+   "name": "Glowing star",
+   "glyph": "🌟",
+   "keywords": [
+    "glittery",
+    "glow",
+    "glowing star",
+    "shining",
+    "sparkle",
+    "star"
+   ],
+   "tags": [
+    "highlight",
+    "featured",
+    "best"
+   ]
+  },
+  {
+   "file": "shooting_star.png",
+   "name": "Shooting star",
+   "glyph": "🌠",
+   "keywords": [
+    "falling",
+    "shooting",
+    "star"
+   ],
+   "tags": [
+    "wish",
+    "trending"
+   ]
+  },
+  {
+   "file": "fire.png",
+   "name": "Fire",
+   "glyph": "🔥",
+   "keywords": [
+    "fire",
+    "flame",
+    "tool"
+   ],
+   "tags": [
+    "hot",
+    "trending",
+    "viral",
+    "popular"
+   ]
+  },
+  {
+   "file": "collision.png",
+   "name": "Collision",
+   "glyph": "💥",
+   "keywords": [
+    "boom",
+    "collision",
+    "comic"
+   ],
+   "tags": [
+    "impact",
+    "boom",
+    "break"
+   ]
+  },
+  {
+   "file": "hundred_points.png",
+   "name": "Hundred points",
+   "glyph": "💯",
+   "keywords": [
+    "100",
+    "full",
+    "hundred",
+    "hundred points",
+    "score"
+   ],
+   "tags": [
+    "score",
+    "perfect"
+   ]
+  },
+  {
+   "file": "trophy.png",
+   "name": "Trophy",
+   "glyph": "🏆",
+   "keywords": [
+    "prize",
+    "trophy"
+   ],
+   "tags": [
+    "win",
+    "winner",
+    "award",
+    "achievement",
+    "success"
+   ]
+  },
+  {
+   "file": "1st_place_medal.png",
+   "name": "1st place medal",
+   "glyph": "🥇",
+   "keywords": [
+    "1st place medal",
+    "first",
+    "gold",
+    "medal"
+   ],
+   "tags": [
+    "first",
+    "rank",
+    "ranking",
+    "top",
+    "best"
+   ]
+  },
+  {
+   "file": "sports_medal.png",
+   "name": "Sports medal",
+   "glyph": "🏅",
+   "keywords": [
+    "medal",
+    "sports medal"
+   ],
+   "tags": [
+    "medal",
+    "achievement"
+   ]
+  },
+  {
+   "file": "crown.png",
+   "name": "Crown",
+   "glyph": "👑",
+   "keywords": [
+    "clothing",
+    "crown",
+    "king",
+    "queen"
+   ],
+   "tags": [
+    "king",
+    "premium",
+    "top",
+    "leader"
+   ]
+  },
+  {
+   "file": "gem_stone.png",
+   "name": "Gem stone",
+   "glyph": "💎",
+   "keywords": [
+    "diamond",
+    "gem",
+    "gem stone",
+    "jewel"
+   ],
+   "tags": [
+    "gem",
+    "premium",
+    "value",
+    "quality"
+   ]
+  },
+  {
+   "file": "ring_buoy.png",
+   "name": "Ring buoy",
+   "glyph": "🛟",
+   "keywords": [
+    "float",
+    "life preserver",
+    "life saver",
+    "rescue",
+    "ring buoy",
+    "safety"
+   ],
+   "tags": [
+    "help",
+    "support",
+    "rescue"
+   ]
+  },
+  {
+   "file": "anchor.png",
+   "name": "Anchor",
+   "glyph": "⚓",
+   "keywords": [
+    "anchor",
+    "ship",
+    "tool"
+   ],
+   "tags": [
+    "anchor",
+    "stable",
+    "link"
+   ]
+  },
+  {
+   "file": "bridge_at_night.png",
+   "name": "Bridge at night",
+   "glyph": "🌉",
+   "keywords": [
+    "bridge",
+    "bridge at night",
+    "night"
+   ],
+   "tags": [
+    "bridge",
+    "connect",
+    "integration"
+   ]
+  },
+  {
+   "file": "mountain.png",
+   "name": "Mountain",
+   "glyph": "⛰️",
+   "keywords": [
+    "mountain"
+   ],
+   "tags": [
+    "mountain",
+    "goal",
+    "challenge"
+   ]
+  },
+  {
+   "file": "seedling.png",
+   "name": "Seedling",
+   "glyph": "🌱",
+   "keywords": [
+    "seedling",
+    "young"
+   ],
+   "tags": [
+    "grow",
+    "growth",
+    "start",
+    "new",
+    "beginner",
+    "seed"
+   ]
+  },
+  {
+   "file": "potted_plant.png",
+   "name": "Potted plant",
+   "glyph": "🪴",
+   "keywords": [
+    "boring",
+    "grow",
+    "house",
+    "nurturing",
+    "plant",
+    "potted plant",
+    "useless"
+   ],
+   "tags": [
+    "grow",
+    "nurture"
+   ]
+  },
+  {
+   "file": "deciduous_tree.png",
+   "name": "Deciduous tree",
+   "glyph": "🌳",
+   "keywords": [
+    "deciduous",
+    "shedding",
+    "tree"
+   ],
+   "tags": [
+    "tree",
+    "structure",
+    "hierarchy"
+   ]
+  },
+  {
+   "file": "herb.png",
+   "name": "Herb",
+   "glyph": "🌿",
+   "keywords": [
+    "herb",
+    "leaf"
+   ],
+   "tags": [
+    "organic",
+    "natural"
+   ]
+  },
+  {
+   "file": "four_leaf_clover.png",
+   "name": "Four leaf clover",
+   "glyph": "🍀",
+   "keywords": [
+    "4",
+    "clover",
+    "four",
+    "four-leaf clover",
+    "leaf"
+   ],
+   "tags": [
+    "luck",
+    "lucky"
+   ]
+  },
+  {
+   "file": "leaf_fluttering_in_wind.png",
+   "name": "Leaf fluttering in wind",
+   "glyph": "🍃",
+   "keywords": [
+    "blow",
+    "flutter",
+    "leaf",
+    "leaf fluttering in wind",
+    "wind"
+   ],
+   "tags": [
+    "light",
+    "minimal"
+   ]
+  },
+  {
+   "file": "sunflower.png",
+   "name": "Sunflower",
+   "glyph": "🌻",
+   "keywords": [
+    "flower",
+    "sun",
+    "sunflower"
+   ],
+   "tags": [
+    "bright",
+    "happy"
+   ]
+  },
+  {
+   "file": "rainbow.png",
+   "name": "Rainbow",
+   "glyph": "🌈",
+   "keywords": [
+    "rain",
+    "rainbow"
+   ],
+   "tags": [
+    "rainbow",
+    "color",
+    "colorful",
+    "pride"
+   ]
+  },
+  {
+   "file": "sun.png",
+   "name": "Sun",
+   "glyph": "☀️",
+   "keywords": [
+    "bright",
+    "rays",
+    "sun",
+    "sunny"
+   ],
+   "tags": [
+    "sun",
+    "day",
+    "light",
+    "theme",
+    "bright",
+    "morning"
+   ]
+  },
+  {
+   "file": "crescent_moon.png",
+   "name": "Crescent moon",
+   "glyph": "🌙",
+   "keywords": [
+    "crescent",
+    "moon"
+   ],
+   "tags": [
+    "night",
+    "dark",
+    "mode",
+    "theme"
+   ]
+  },
+  {
+   "file": "cloud.png",
+   "name": "Cloud",
+   "glyph": "☁️",
+   "keywords": [
+    "cloud",
+    "weather"
+   ],
+   "tags": [
+    "cloud",
+    "hosting",
+    "online",
+    "saas"
+   ]
+  },
+  {
+   "file": "cloud_with_lightning.png",
+   "name": "Cloud with lightning",
+   "glyph": "🌩️",
+   "keywords": [
+    "cloud",
+    "cloud with lightning",
+    "lightning"
+   ],
+   "tags": [
+    "storm",
+    "outage",
+    "incident"
+   ]
+  },
+  {
+   "file": "droplet.png",
+   "name": "Droplet",
+   "glyph": "💧",
+   "keywords": [
+    "cold",
+    "comic",
+    "drop",
+    "droplet",
+    "sweat"
+   ],
+   "tags": [
+    "water",
+    "drop",
+    "liquid"
+   ]
+  },
+  {
+   "file": "water_wave.png",
+   "name": "Water wave",
+   "glyph": "🌊",
+   "keywords": [
+    "ocean",
+    "water",
+    "wave"
+   ],
+   "tags": [
+    "wave",
+    "stream",
+    "flow"
+   ]
+  },
+  {
+   "file": "snowflake.png",
+   "name": "Snowflake",
+   "glyph": "❄️",
+   "keywords": [
+    "cold",
+    "snow",
+    "snowflake"
+   ],
+   "tags": [
+    "freeze",
+    "cold",
+    "winter",
+    "unique"
+   ]
+  },
+  {
+   "file": "umbrella.png",
+   "name": "Umbrella",
+   "glyph": "☂️",
+   "keywords": [
+    "clothing",
+    "rain",
+    "umbrella"
+   ],
+   "tags": [
+    "cover",
+    "protect",
+    "insurance"
+   ]
+  },
+  {
+   "file": "memo.png",
+   "name": "Memo",
+   "glyph": "📝",
+   "keywords": [
+    "memo",
+    "pencil"
+   ],
+   "tags": [
+    "write",
+    "writing",
+    "note",
+    "notes",
+    "draft",
+    "memo",
+    "text",
+    "copy",
+    "document",
+    "doc"
+   ]
+  },
+  {
+   "file": "writing_hand.png",
+   "name": "Writing hand",
+   "glyph": "✍️",
+   "keywords": [
+    "hand",
+    "write",
+    "writing hand"
+   ],
+   "tags": [
+    "write",
+    "writing",
+    "author",
+    "voice",
+    "copywriting",
+    "blog"
+   ]
+  },
+  {
+   "file": "pencil.png",
+   "name": "Pencil",
+   "glyph": "✏️",
+   "keywords": [
+    "pencil"
+   ],
+   "tags": [
+    "edit",
+    "write",
+    "draft",
+    "sketch"
+   ]
+  },
+  {
+   "file": "fountain_pen.png",
+   "name": "Fountain pen",
+   "glyph": "🖋️",
+   "keywords": [
+    "fountain",
+    "pen"
+   ],
+   "tags": [
+    "sign",
+    "signature",
+    "write",
+    "elegant"
+   ]
+  },
+  {
+   "file": "black_nib.png",
+   "name": "Black nib",
+   "glyph": "✒️",
+   "keywords": [
+    "black nib",
+    "nib",
+    "pen"
+   ],
+   "tags": [
+    "pen",
+    "write",
+    "calligraphy"
+   ]
+  },
+  {
+   "file": "pen.png",
+   "name": "Pen",
+   "glyph": "🖊️",
+   "keywords": [
+    "ballpoint",
+    "pen"
+   ],
+   "tags": [
+    "write",
+    "sign"
+   ]
+  },
+  {
+   "file": "crayon.png",
+   "name": "Crayon",
+   "glyph": "🖍️",
+   "keywords": [
+    "crayon"
+   ],
+   "tags": [
+    "draw",
+    "color",
+    "kids"
+   ]
+  },
+  {
+   "file": "paintbrush.png",
+   "name": "Paintbrush",
+   "glyph": "🖌️",
+   "keywords": [
+    "paintbrush",
+    "painting"
+   ],
+   "tags": [
+    "paint",
+    "design",
+    "art",
+    "style",
+    "brush"
+   ]
+  },
+  {
+   "file": "artist_palette.png",
+   "name": "Artist palette",
+   "glyph": "🎨",
+   "keywords": [
+    "art",
+    "artist palette",
+    "museum",
+    "painting",
+    "palette"
+   ],
+   "tags": [
+    "design",
+    "art",
+    "color",
+    "colors",
+    "palette",
+    "brand",
+    "style",
+    "ui",
+    "creative",
+    "logo",
+    "branding"
+   ]
+  },
+  {
+   "file": "framed_picture.png",
+   "name": "Framed picture",
+   "glyph": "🖼️",
+   "keywords": [
+    "art",
+    "frame",
+    "framed picture",
+    "museum",
+    "painting",
+    "picture"
+   ],
+   "tags": [
+    "image",
+    "picture",
+    "photo",
+    "art",
+    "gallery",
+    "og",
+    "thumbnail",
+    "preview",
+    "cover",
+    "card"
+   ]
+  },
+  {
+   "file": "page_facing_up.png",
+   "name": "Page facing up",
+   "glyph": "📄",
+   "keywords": [
+    "document",
+    "page",
+    "page facing up"
+   ],
+   "tags": [
+    "document",
+    "page",
+    "file",
+    "doc",
+    "pdf",
+    "pdfs"
+   ]
+  },
+  {
+   "file": "page_with_curl.png",
+   "name": "Page with curl",
+   "glyph": "📃",
+   "keywords": [
+    "curl",
+    "document",
+    "page",
+    "page with curl"
+   ],
+   "tags": [
+    "document",
+    "page",
+    "file"
+   ]
+  },
+  {
+   "file": "scroll.png",
+   "name": "Scroll",
+   "glyph": "📜",
+   "keywords": [
+    "paper",
+    "scroll"
+   ],
+   "tags": [
+    "scroll",
+    "history",
+    "legacy",
+    "contract",
+    "terms",
+    "policy"
+   ]
+  },
+  {
+   "file": "open_book.png",
+   "name": "Open book",
+   "glyph": "📖",
+   "keywords": [
+    "book",
+    "open"
+   ],
+   "tags": [
+    "read",
+    "reading",
+    "book",
+    "learn",
+    "guide",
+    "docs",
+    "documentation"
+   ]
+  },
+  {
+   "file": "books.png",
+   "name": "Books",
+   "glyph": "📚",
+   "keywords": [
+    "book",
+    "books"
+   ],
+   "tags": [
+    "books",
+    "library",
+    "knowledge",
+    "learning",
+    "study"
+   ]
+  },
+  {
+   "file": "notebook.png",
+   "name": "Notebook",
+   "glyph": "📓",
+   "keywords": [
+    "notebook"
+   ],
+   "tags": [
+    "notebook",
+    "notes",
+    "journal"
+   ]
+  },
+  {
+   "file": "notebook_with_decorative_cover.png",
+   "name": "Notebook with decorative cover",
+   "glyph": "📔",
+   "keywords": [
+    "book",
+    "cover",
+    "decorated",
+    "notebook",
+    "notebook with decorative cover"
+   ],
+   "tags": [
+    "journal",
+    "diary"
+   ]
+  },
+  {
+   "file": "ledger.png",
+   "name": "Ledger",
+   "glyph": "📒",
+   "keywords": [
+    "ledger",
+    "notebook"
+   ],
+   "tags": [
+    "ledger",
+    "accounting",
+    "bookkeeping"
+   ]
+  },
+  {
+   "file": "spiral_notepad.png",
+   "name": "Spiral notepad",
+   "glyph": "🗒️",
+   "keywords": [
+    "note",
+    "pad",
+    "spiral",
+    "spiral notepad"
+   ],
+   "tags": [
+    "notes",
+    "notepad",
+    "list"
+   ]
+  },
+  {
+   "file": "clipboard.png",
+   "name": "Clipboard",
+   "glyph": "📋",
+   "keywords": [
+    "clipboard"
+   ],
+   "tags": [
+    "clipboard",
+    "checklist",
+    "list",
+    "task",
+    "plan",
+    "form"
+   ]
+  },
+  {
+   "file": "bookmark_tabs.png",
+   "name": "Bookmark tabs",
+   "glyph": "📑",
+   "keywords": [
+    "bookmark",
+    "mark",
+    "marker",
+    "tabs"
+   ],
+   "tags": [
+    "bookmark",
+    "tabs",
+    "reference",
+    "index"
+   ]
+  },
+  {
+   "file": "bookmark.png",
+   "name": "Bookmark",
+   "glyph": "🔖",
+   "keywords": [
+    "bookmark",
+    "mark"
+   ],
+   "tags": [
+    "bookmark",
+    "save"
+   ]
+  },
+  {
+   "file": "label.png",
+   "name": "Label",
+   "glyph": "🏷️",
+   "keywords": [
+    "label"
+   ],
+   "tags": [
+    "label",
+    "tag",
+    "tags",
+    "category",
+    "keyword",
+    "keywords",
+    "bold",
+    "emphasis",
+    "highlight"
+   ]
+  },
+  {
+   "file": "pushpin.png",
+   "name": "Pushpin",
+   "glyph": "📌",
+   "keywords": [
+    "pin",
+    "pushpin"
+   ],
+   "tags": [
+    "pin",
+    "pinned",
+    "important"
+   ]
+  },
+  {
+   "file": "round_pushpin.png",
+   "name": "Round pushpin",
+   "glyph": "📍",
+   "keywords": [
+    "pin",
+    "pushpin",
+    "round pushpin"
+   ],
+   "tags": [
+    "location",
+    "place",
+    "local",
+    "pin"
+   ]
+  },
+  {
+   "file": "paperclip.png",
+   "name": "Paperclip",
+   "glyph": "📎",
+   "keywords": [
+    "paperclip"
+   ],
+   "tags": [
+    "attach",
+    "attachment"
+   ]
+  },
+  {
+   "file": "straight_ruler.png",
+   "name": "Straight ruler",
+   "glyph": "📏",
+   "keywords": [
+    "ruler",
+    "straight edge",
+    "straight ruler"
+   ],
+   "tags": [
+    "measure",
+    "size",
+    "layout"
+   ]
+  },
+  {
+   "file": "triangular_ruler.png",
+   "name": "Triangular ruler",
+   "glyph": "📐",
+   "keywords": [
+    "ruler",
+    "set",
+    "triangle",
+    "triangular ruler"
+   ],
+   "tags": [
+    "design",
+    "measure",
+    "geometry",
+    "layout",
+    "logo"
+   ]
+  },
+  {
+   "file": "scissors.png",
+   "name": "Scissors",
+   "glyph": "✂️",
+   "keywords": [
+    "cutting",
+    "scissors",
+    "tool"
+   ],
+   "tags": [
+    "cut",
+    "trim",
+    "edit",
+    "clip"
+   ]
+  },
+  {
+   "file": "newspaper.png",
+   "name": "Newspaper",
+   "glyph": "📰",
+   "keywords": [
+    "news",
+    "newspaper",
+    "paper"
+   ],
+   "tags": [
+    "news",
+    "article",
+    "blog",
+    "press",
+    "publish"
+   ]
+  },
+  {
+   "file": "rolled-up_newspaper.png",
+   "name": "Rolled-up newspaper",
+   "glyph": "🗞️",
+   "keywords": [
+    "news",
+    "newspaper",
+    "paper",
+    "rolled",
+    "rolled-up newspaper"
+   ],
+   "tags": [
+    "news"
+   ]
+  },
+  {
+   "file": "placard.png",
+   "name": "Placard",
+   "glyph": "🪧",
+   "keywords": [
+    "demonstration",
+    "picket",
+    "placard",
+    "protest",
+    "sign"
+   ],
+   "tags": [
+    "sign",
+    "announcement"
+   ]
+  },
+  {
+   "file": "spiral_calendar.png",
+   "name": "Spiral calendar",
+   "glyph": "🗓️",
+   "keywords": [
+    "calendar",
+    "pad",
+    "spiral"
+   ],
+   "tags": [
+    "calendar",
+    "schedule",
+    "date",
+    "plan",
+    "event",
+    "meeting"
+   ]
+  },
+  {
+   "file": "calendar.png",
+   "name": "Calendar",
+   "glyph": "📅",
+   "keywords": [
+    "calendar",
+    "date"
+   ],
+   "tags": [
+    "calendar",
+    "date"
+   ]
+  },
+  {
+   "file": "tear-off_calendar.png",
+   "name": "Tear-off calendar",
+   "glyph": "📆",
+   "keywords": [
+    "calendar",
+    "tear-off calendar"
+   ],
+   "tags": [
+    "daily",
+    "day",
+    "date"
+   ]
+  },
+  {
+   "file": "card_index.png",
+   "name": "Card index",
+   "glyph": "📇",
+   "keywords": [
+    "card",
+    "index",
+    "rolodex"
+   ],
+   "tags": [
+    "contacts",
+    "cards",
+    "index"
+   ]
+  },
+  {
+   "file": "card_index_dividers.png",
+   "name": "Card index dividers",
+   "glyph": "🗂️",
+   "keywords": [
+    "card",
+    "dividers",
+    "index"
+   ],
+   "tags": [
+    "organize",
+    "categories",
+    "sections"
+   ]
+  },
+  {
+   "file": "identification_card.png",
+   "name": "Identification card",
+   "glyph": "🪪",
+   "keywords": [
+    "ID",
+    "credentials",
+    "identification card",
+    "license",
+    "security"
+   ],
+   "tags": [
+    "identity",
+    "id",
+    "profile",
+    "cv",
+    "resume"
+   ]
+  },
+  {
+   "file": "name_badge.png",
+   "name": "Name badge",
+   "glyph": "📛",
+   "keywords": [
+    "badge",
+    "name"
+   ],
+   "tags": [
+    "name",
+    "badge",
+    "identity"
+   ]
+  },
+  {
+   "file": "graduation_cap.png",
+   "name": "Graduation cap",
+   "glyph": "🎓",
+   "keywords": [
+    "cap",
+    "celebration",
+    "clothing",
+    "graduation",
+    "hat"
+   ],
+   "tags": [
+    "learn",
+    "learning",
+    "education",
+    "course"
+   ]
+  },
+  {
+   "file": "teacher.png",
+   "name": "Teacher",
+   "glyph": "🧑‍🏫",
+   "keywords": [
+    "instructor",
+    "professor",
+    "teacher"
+   ],
+   "tags": [
+    "teach",
+    "teaching",
+    "tutor",
+    "coach",
+    "lesson"
+   ]
+  },
+  {
+   "file": "student.png",
+   "name": "Student",
+   "glyph": "🧑‍🎓",
+   "keywords": [
+    "graduate",
+    "student"
+   ],
+   "tags": [
+    "learn",
+    "student",
+    "study"
+   ]
+  },
+  {
+   "file": "speech_balloon.png",
+   "name": "Speech balloon",
+   "glyph": "💬",
+   "keywords": [
+    "balloon",
+    "bubble",
+    "comic",
+    "dialog",
+    "speech"
+   ],
+   "tags": [
+    "chat",
+    "message",
+    "conversation",
+    "comment",
+    "reply",
+    "talk"
+   ]
+  },
+  {
+   "file": "left_speech_bubble.png",
+   "name": "Left speech bubble",
+   "glyph": "🗨️",
+   "keywords": [
+    "dialog",
+    "left speech bubble",
+    "speech"
+   ],
+   "tags": [
+    "chat",
+    "message"
+   ]
+  },
+  {
+   "file": "thought_balloon.png",
+   "name": "Thought balloon",
+   "glyph": "💭",
+   "keywords": [
+    "balloon",
+    "bubble",
+    "comic",
+    "thought"
+   ],
+   "tags": [
+    "think",
+    "idea",
+    "reflect"
+   ]
+  },
+  {
+   "file": "speaking_head.png",
+   "name": "Speaking head",
+   "glyph": "🗣️",
+   "keywords": [
+    "face",
+    "head",
+    "silhouette",
+    "speak",
+    "speaking"
+   ],
+   "tags": [
+    "speak",
+    "speech",
+    "voice",
+    "talk"
+   ]
+  },
+  {
+   "file": "eye_in_speech_bubble.png",
+   "name": "Eye in speech bubble",
+   "glyph": "👁️‍🗨️",
+   "keywords": [
+    "eye",
+    "eye in speech bubble",
+    "speech bubble",
+    "witness"
+   ],
+   "tags": [
+    "review",
+    "witness"
+   ]
+  },
+  {
+   "file": "eyes.png",
+   "name": "Eyes",
+   "glyph": "👀",
+   "keywords": [
+    "eye",
+    "eyes",
+    "face"
+   ],
+   "tags": [
+    "review",
+    "look",
+    "watch",
+    "see",
+    "preview",
+    "monitor"
+   ]
+  },
+  {
+   "file": "eye.png",
+   "name": "Eye",
+   "glyph": "👁️",
+   "keywords": [
+    "body",
+    "eye"
+   ],
+   "tags": [
+    "see",
+    "view",
+    "vision"
+   ]
+  },
+  {
+   "file": "thinking_face.png",
+   "name": "Thinking face",
+   "glyph": "🤔",
+   "keywords": [
+    "face",
+    "thinking"
+   ],
+   "tags": [
+    "think",
+    "question",
+    "grill",
+    "challenge",
+    "doubt"
+   ]
+  },
+  {
+   "file": "exploding_head.png",
+   "name": "Exploding head",
+   "glyph": "🤯",
+   "keywords": [
+    "exploding head",
+    "mind blown",
+    "shocked"
+   ],
+   "tags": [
+    "mind",
+    "blown",
+    "meme",
+    "memes",
+    "funny",
+    "joke",
+    "humor"
+   ]
+  },
+  {
+   "file": "nerd_face.png",
+   "name": "Nerd face",
+   "glyph": "🤓",
+   "keywords": [
+    "face",
+    "geek",
+    "nerd"
+   ],
+   "tags": [
+    "nerd",
+    "geek",
+    "technical"
+   ]
+  },
+  {
+   "file": "detective.png",
+   "name": "Detective",
+   "glyph": "🕵️",
+   "keywords": [
+    "detective",
+    "sleuth",
+    "spy"
+   ],
+   "tags": [
+    "investigate",
+    "research",
+    "detective",
+    "inspect",
+    "find"
+   ]
+  },
+  {
+   "file": "technologist.png",
+   "name": "Technologist",
+   "glyph": "🧑‍💻",
+   "keywords": [
+    "coder",
+    "developer",
+    "inventor",
+    "software",
+    "technologist"
+   ],
+   "tags": [
+    "developer",
+    "engineer",
+    "programmer",
+    "coder"
+   ]
+  },
+  {
+   "file": "scientist.png",
+   "name": "Scientist",
+   "glyph": "🧑‍🔬",
+   "keywords": [
+    "biologist",
+    "chemist",
+    "engineer",
+    "physicist",
+    "scientist"
+   ],
+   "tags": [
+    "science",
+    "research",
+    "experiment"
+   ]
+  },
+  {
+   "file": "office_worker.png",
+   "name": "Office worker",
+   "glyph": "🧑‍💼",
+   "keywords": [
+    "architect",
+    "business",
+    "manager",
+    "office worker",
+    "white-collar"
+   ],
+   "tags": [
+    "job",
+    "work",
+    "career",
+    "employee",
+    "office"
+   ]
+  },
+  {
+   "file": "artist.png",
+   "name": "Artist",
+   "glyph": "🧑‍🎨",
+   "keywords": [
+    "artist",
+    "palette"
+   ],
+   "tags": [
+    "artist",
+    "creative",
+    "design"
+   ]
+  },
+  {
+   "file": "busts_in_silhouette.png",
+   "name": "Busts in silhouette",
+   "glyph": "👥",
+   "keywords": [
+    "bust",
+    "busts in silhouette",
+    "silhouette"
+   ],
+   "tags": [
+    "team",
+    "users",
+    "people",
+    "audience",
+    "customers",
+    "community"
+   ]
+  },
+  {
+   "file": "bust_in_silhouette.png",
+   "name": "Bust in silhouette",
+   "glyph": "👤",
+   "keywords": [
+    "bust",
+    "bust in silhouette",
+    "silhouette"
+   ],
+   "tags": [
+    "user",
+    "profile",
+    "person",
+    "account"
+   ]
+  },
+  {
+   "file": "handshake.png",
+   "name": "Handshake",
+   "glyph": "🤝",
+   "keywords": [
+    "agreement",
+    "hand",
+    "handshake",
+    "meeting",
+    "shake"
+   ],
+   "tags": [
+    "deal",
+    "partnership",
+    "agreement",
+    "collaboration",
+    "sales",
+    "proposal",
+    "client"
+   ]
+  },
+  {
+   "file": "waving_hand.png",
+   "name": "Waving hand",
+   "glyph": "👋",
+   "keywords": [
+    "hand",
+    "wave",
+    "waving"
+   ],
+   "tags": [
+    "hello",
+    "welcome",
+    "greeting",
+    "onboarding"
+   ]
+  },
+  {
+   "file": "clapping_hands.png",
+   "name": "Clapping hands",
+   "glyph": "👏",
+   "keywords": [
+    "clap",
+    "clapping hands",
+    "hand"
+   ],
+   "tags": [
+    "applause",
+    "congrats",
+    "celebrate"
+   ]
+  },
+  {
+   "file": "flexed_biceps.png",
+   "name": "Flexed biceps",
+   "glyph": "💪",
+   "keywords": [
+    "biceps",
+    "comic",
+    "flex",
+    "flexed biceps",
+    "muscle"
+   ],
+   "tags": [
+    "strength",
+    "strong",
+    "power"
+   ]
+  },
+  {
+   "file": "red_heart.png",
+   "name": "Red heart",
+   "glyph": "❤️",
+   "keywords": [
+    "heart",
+    "red heart"
+   ],
+   "tags": [
+    "love",
+    "favorite",
+    "like",
+    "care",
+    "health"
+   ]
+  },
+  {
+   "file": "anatomical_heart.png",
+   "name": "Anatomical heart",
+   "glyph": "🫀",
+   "keywords": [
+    "anatomical",
+    "cardiology",
+    "heart",
+    "organ",
+    "pulse"
+   ],
+   "tags": [
+    "health",
+    "medical"
+   ]
+  },
+  {
+   "file": "ghost.png",
+   "name": "Ghost",
+   "glyph": "👻",
+   "keywords": [
+    "creature",
+    "face",
+    "fairy tale",
+    "fantasy",
+    "ghost",
+    "monster"
+   ],
+   "tags": [
+    "ghost",
+    "hidden"
+   ]
+  },
+  {
+   "file": "alien_monster.png",
+   "name": "Alien monster",
+   "glyph": "👾",
+   "keywords": [
+    "alien",
+    "creature",
+    "extraterrestrial",
+    "face",
+    "monster",
+    "ufo"
+   ],
+   "tags": [
+    "game",
+    "gaming",
+    "retro"
+   ]
+  },
+  {
+   "file": "zzz.png",
+   "name": "Zzz",
+   "glyph": "💤",
+   "keywords": [
+    "comic",
+    "sleep",
+    "zzz"
+   ],
+   "tags": [
+    "sleep",
+    "idle",
+    "background"
+   ]
+  },
+  {
+   "file": "e-mail.png",
+   "name": "E-mail",
+   "glyph": "📧",
+   "keywords": [
+    "e-mail",
+    "email",
+    "letter",
+    "mail"
+   ],
+   "tags": [
+    "email",
+    "mail",
+    "newsletter",
+    "gmail",
+    "outreach"
+   ]
+  },
+  {
+   "file": "envelope.png",
+   "name": "Envelope",
+   "glyph": "✉️",
+   "keywords": [
+    "email",
+    "envelope",
+    "letter"
+   ],
+   "tags": [
+    "email",
+    "mail",
+    "letter",
+    "message"
+   ]
+  },
+  {
+   "file": "envelope_with_arrow.png",
+   "name": "Envelope with arrow",
+   "glyph": "📩",
+   "keywords": [
+    "arrow",
+    "e-mail",
+    "email",
+    "envelope",
+    "envelope with arrow",
+    "outgoing"
+   ],
+   "tags": [
+    "send",
+    "email",
+    "outreach"
+   ]
+  },
+  {
+   "file": "incoming_envelope.png",
+   "name": "Incoming envelope",
+   "glyph": "📨",
+   "keywords": [
+    "e-mail",
+    "email",
+    "envelope",
+    "incoming",
+    "letter",
+    "receive"
+   ],
+   "tags": [
+    "incoming",
+    "email",
+    "inbox"
+   ]
+  },
+  {
+   "file": "inbox_tray.png",
+   "name": "Inbox tray",
+   "glyph": "📥",
+   "keywords": [
+    "box",
+    "inbox",
+    "letter",
+    "mail",
+    "receive",
+    "tray"
+   ],
+   "tags": [
+    "inbox",
+    "incoming"
+   ]
+  },
+  {
+   "file": "outbox_tray.png",
+   "name": "Outbox tray",
+   "glyph": "📤",
+   "keywords": [
+    "box",
+    "letter",
+    "mail",
+    "outbox",
+    "sent",
+    "tray"
+   ],
+   "tags": [
+    "outbox",
+    "send",
+    "outgoing"
+   ]
+  },
+  {
+   "file": "postbox.png",
+   "name": "Postbox",
+   "glyph": "📮",
+   "keywords": [
+    "mail",
+    "mailbox",
+    "postbox"
+   ],
+   "tags": [
+    "mail",
+    "post",
+    "send"
+   ]
+  },
+  {
+   "file": "closed_mailbox_with_raised_flag.png",
+   "name": "Closed mailbox with raised flag",
+   "glyph": "📫",
+   "keywords": [
+    "closed",
+    "closed mailbox with raised flag",
+    "mail",
+    "mailbox",
+    "postbox"
+   ],
+   "tags": [
+    "mailbox",
+    "mail",
+    "new"
+   ]
+  },
+  {
+   "file": "mobile_phone.png",
+   "name": "Mobile phone",
+   "glyph": "📱",
+   "keywords": [
+    "cell",
+    "mobile",
+    "phone",
+    "telephone"
+   ],
+   "tags": [
+    "mobile",
+    "phone",
+    "app",
+    "ios",
+    "android",
+    "iphone"
+   ]
+  },
+  {
+   "file": "mobile_phone_with_arrow.png",
+   "name": "Mobile phone with arrow",
+   "glyph": "📲",
+   "keywords": [
+    "arrow",
+    "cell",
+    "mobile",
+    "mobile phone with arrow",
+    "phone",
+    "receive"
+   ],
+   "tags": [
+    "call",
+    "mobile"
+   ]
+  },
+  {
+   "file": "telephone_receiver.png",
+   "name": "Telephone receiver",
+   "glyph": "📞",
+   "keywords": [
+    "phone",
+    "receiver",
+    "telephone"
+   ],
+   "tags": [
+    "call",
+    "phone",
+    "support"
+   ]
+  },
+  {
+   "file": "megaphone.png",
+   "name": "Megaphone",
+   "glyph": "📣",
+   "keywords": [
+    "cheering",
+    "megaphone"
+   ],
+   "tags": [
+    "announce",
+    "marketing",
+    "promote",
+    "ads",
+    "advertising",
+    "campaign",
+    "broadcast"
+   ]
+  },
+  {
+   "file": "loudspeaker.png",
+   "name": "Loudspeaker",
+   "glyph": "📢",
+   "keywords": [
+    "loud",
+    "loudspeaker",
+    "public address"
+   ],
+   "tags": [
+    "announce",
+    "speaker"
+   ]
+  },
+  {
+   "file": "bell.png",
+   "name": "Bell",
+   "glyph": "🔔",
+   "keywords": [
+    "bell"
+   ],
+   "tags": [
+    "notification",
+    "notify",
+    "alert",
+    "reminder"
+   ]
+  },
+  {
+   "file": "microphone.png",
+   "name": "Microphone",
+   "glyph": "🎤",
+   "keywords": [
+    "karaoke",
+    "mic",
+    "microphone"
+   ],
+   "tags": [
+    "podcast",
+    "voice",
+    "record",
+    "audio",
+    "sing"
+   ]
+  },
+  {
+   "file": "studio_microphone.png",
+   "name": "Studio microphone",
+   "glyph": "🎙️",
+   "keywords": [
+    "mic",
+    "microphone",
+    "music",
+    "studio"
+   ],
+   "tags": [
+    "podcast",
+    "audio",
+    "recording",
+    "studio"
+   ]
+  },
+  {
+   "file": "headphone.png",
+   "name": "Headphone",
+   "glyph": "🎧",
+   "keywords": [
+    "earbud",
+    "headphone"
+   ],
+   "tags": [
+    "audio",
+    "music",
+    "listen",
+    "podcast"
+   ]
+  },
+  {
+   "file": "musical_note.png",
+   "name": "Musical note",
+   "glyph": "🎵",
+   "keywords": [
+    "music",
+    "musical note",
+    "note"
+   ],
+   "tags": [
+    "music",
+    "song",
+    "audio",
+    "sound"
+   ]
+  },
+  {
+   "file": "musical_notes.png",
+   "name": "Musical notes",
+   "glyph": "🎶",
+   "keywords": [
+    "music",
+    "musical notes",
+    "note",
+    "notes"
+   ],
+   "tags": [
+    "music",
+    "sound"
+   ]
+  },
+  {
+   "file": "speaker_high_volume.png",
+   "name": "Speaker high volume",
+   "glyph": "🔊",
+   "keywords": [
+    "loud",
+    "speaker high volume"
+   ],
+   "tags": [
+    "sound",
+    "volume",
+    "audio"
+   ]
+  },
+  {
+   "file": "radio.png",
+   "name": "Radio",
+   "glyph": "📻",
+   "keywords": [
+    "radio",
+    "video"
+   ],
+   "tags": [
+    "radio",
+    "broadcast"
+   ]
+  },
+  {
+   "file": "camera.png",
+   "name": "Camera",
+   "glyph": "📷",
+   "keywords": [
+    "camera",
+    "video"
+   ],
+   "tags": [
+    "photo",
+    "photography",
+    "image",
+    "picture"
+   ]
+  },
+  {
+   "file": "camera_with_flash.png",
+   "name": "Camera with flash",
+   "glyph": "📸",
+   "keywords": [
+    "camera",
+    "camera with flash",
+    "flash",
+    "video"
+   ],
+   "tags": [
+    "photo",
+    "screenshot",
+    "capture"
+   ]
+  },
+  {
+   "file": "video_camera.png",
+   "name": "Video camera",
+   "glyph": "📹",
+   "keywords": [
+    "camera",
+    "video"
+   ],
+   "tags": [
+    "video",
+    "record",
+    "recording",
+    "youtube",
+    "filming"
+   ]
+  },
+  {
+   "file": "movie_camera.png",
+   "name": "Movie camera",
+   "glyph": "🎥",
+   "keywords": [
+    "camera",
+    "cinema",
+    "movie"
+   ],
+   "tags": [
+    "film",
+    "movie",
+    "video"
+   ]
+  },
+  {
+   "file": "clapper_board.png",
+   "name": "Clapper board",
+   "glyph": "🎬",
+   "keywords": [
+    "clapper",
+    "clapper board",
+    "movie"
+   ],
+   "tags": [
+    "video",
+    "film",
+    "edit",
+    "scene",
+    "production",
+    "reel"
+   ]
+  },
+  {
+   "file": "film_frames.png",
+   "name": "Film frames",
+   "glyph": "🎞️",
+   "keywords": [
+    "cinema",
+    "film",
+    "frames",
+    "movie"
+   ],
+   "tags": [
+    "film",
+    "frames",
+    "animation"
+   ]
+  },
+  {
+   "file": "film_projector.png",
+   "name": "Film projector",
+   "glyph": "📽️",
+   "keywords": [
+    "cinema",
+    "film",
+    "movie",
+    "projector",
+    "video"
+   ],
+   "tags": [
+    "film",
+    "present",
+    "presentation",
+    "presentations",
+    "slides",
+    "deck",
+    "pitch"
+   ]
+  },
+  {
+   "file": "television.png",
+   "name": "Television",
+   "glyph": "📺",
+   "keywords": [
+    "television",
+    "tv",
+    "video"
+   ],
+   "tags": [
+    "tv",
+    "video",
+    "broadcast",
+    "stream",
+    "youtube",
+    "livestream",
+    "live",
+    "streaming"
+   ]
+  },
+  {
+   "file": "videocassette.png",
+   "name": "Videocassette",
+   "glyph": "📼",
+   "keywords": [
+    "tape",
+    "vhs",
+    "video",
+    "videocassette"
+   ],
+   "tags": [
+    "video",
+    "tape"
+   ]
+  },
+  {
+   "file": "play_button.png",
+   "name": "Play button",
+   "glyph": "▶️",
+   "keywords": [
+    "arrow",
+    "play",
+    "play button",
+    "right",
+    "triangle"
+   ],
+   "tags": [
+    "play",
+    "video",
+    "start",
+    "run"
+   ]
+  },
+  {
+   "file": "record_button.png",
+   "name": "Record button",
+   "glyph": "⏺️",
+   "keywords": [
+    "circle",
+    "record",
+    "record button"
+   ],
+   "tags": [
+    "record",
+    "live",
+    "livestream"
+   ]
+  },
+  {
+   "file": "joystick.png",
+   "name": "Joystick",
+   "glyph": "🕹️",
+   "keywords": [
+    "game",
+    "joystick",
+    "video game"
+   ],
+   "tags": [
+    "game",
+    "gaming",
+    "play"
+   ]
+  },
+  {
+   "file": "video_game.png",
+   "name": "Video game",
+   "glyph": "🎮",
+   "keywords": [
+    "controller",
+    "game",
+    "video game"
+   ],
+   "tags": [
+    "game",
+    "gaming"
+   ]
+  },
+  {
+   "file": "game_die.png",
+   "name": "Game die",
+   "glyph": "🎲",
+   "keywords": [
+    "dice",
+    "die",
+    "game"
+   ],
+   "tags": [
+    "random",
+    "chance",
+    "game",
+    "dice"
+   ]
+  },
+  {
+   "file": "performing_arts.png",
+   "name": "Performing arts",
+   "glyph": "🎭",
+   "keywords": [
+    "art",
+    "mask",
+    "performing",
+    "performing arts",
+    "theater",
+    "theatre"
+   ],
+   "tags": [
+    "theater",
+    "drama",
+    "comedy",
+    "entertainment"
+   ]
+  },
+  {
+   "file": "circus_tent.png",
+   "name": "Circus tent",
+   "glyph": "🎪",
+   "keywords": [
+    "circus",
+    "tent"
+   ],
+   "tags": [
+    "show",
+    "entertainment",
+    "fun"
+   ]
+  },
+  {
+   "file": "party_popper.png",
+   "name": "Party popper",
+   "glyph": "🎉",
+   "keywords": [
+    "celebration",
+    "party",
+    "popper",
+    "tada"
+   ],
+   "tags": [
+    "celebrate",
+    "party",
+    "launch",
+    "announcement"
+   ]
+  },
+  {
+   "file": "confetti_ball.png",
+   "name": "Confetti ball",
+   "glyph": "🎊",
+   "keywords": [
+    "ball",
+    "celebration",
+    "confetti"
+   ],
+   "tags": [
+    "celebrate"
+   ]
+  },
+  {
+   "file": "balloon.png",
+   "name": "Balloon",
+   "glyph": "🎈",
+   "keywords": [
+    "balloon",
+    "celebration"
+   ],
+   "tags": [
+    "party",
+    "fun"
+   ]
+  },
+  {
+   "file": "wrapped_gift.png",
+   "name": "Wrapped gift",
+   "glyph": "🎁",
+   "keywords": [
+    "box",
+    "celebration",
+    "gift",
+    "present",
+    "wrapped"
+   ],
+   "tags": [
+    "gift",
+    "bonus",
+    "offer",
+    "reward"
+   ]
+  },
+  {
+   "file": "ticket.png",
+   "name": "Ticket",
+   "glyph": "🎫",
+   "keywords": [
+    "admission",
+    "ticket"
+   ],
+   "tags": [
+    "ticket",
+    "event"
+   ]
+  },
+  {
+   "file": "admission_tickets.png",
+   "name": "Admission tickets",
+   "glyph": "🎟️",
+   "keywords": [
+    "admission",
+    "admission tickets",
+    "ticket"
+   ],
+   "tags": [
+    "tickets",
+    "event"
+   ]
+  },
+  {
+   "file": "ribbon.png",
+   "name": "Ribbon",
+   "glyph": "🎀",
+   "keywords": [
+    "celebration",
+    "ribbon"
+   ],
+   "tags": [
+    "gift"
+   ]
+  },
+  {
+   "file": "yarn.png",
+   "name": "Yarn",
+   "glyph": "🧶",
+   "keywords": [
+    "ball",
+    "crochet",
+    "knit",
+    "yarn"
+   ],
+   "tags": [
+    "craft",
+    "knit"
+   ]
+  },
+  {
+   "file": "thread.png",
+   "name": "Thread",
+   "glyph": "🧵",
+   "keywords": [
+    "needle",
+    "sewing",
+    "spool",
+    "string",
+    "thread"
+   ],
+   "tags": [
+    "thread",
+    "sew"
+   ]
+  },
+  {
+   "file": "kite.png",
+   "name": "Kite",
+   "glyph": "🪁",
+   "keywords": [
+    "fly",
+    "kite",
+    "soar"
+   ],
+   "tags": [
+    "fly",
+    "fun"
+   ]
+  },
+  {
+   "file": "bar_chart.png",
+   "name": "Bar chart",
+   "glyph": "📊",
+   "keywords": [
+    "bar",
+    "chart",
+    "graph"
+   ],
+   "tags": [
+    "chart",
+    "analytics",
+    "metrics",
+    "stats",
+    "data",
+    "report",
+    "dashboard"
+   ]
+  },
+  {
+   "file": "chart_increasing.png",
+   "name": "Chart increasing",
+   "glyph": "📈",
+   "keywords": [
+    "chart",
+    "chart increasing",
+    "graph",
+    "growth",
+    "trend",
+    "upward"
+   ],
+   "tags": [
+    "growth",
+    "metrics",
+    "analytics",
+    "seo",
+    "traffic",
+    "increase",
+    "trend",
+    "revenue"
+   ]
+  },
+  {
+   "file": "chart_decreasing.png",
+   "name": "Chart decreasing",
+   "glyph": "📉",
+   "keywords": [
+    "chart",
+    "chart decreasing",
+    "down",
+    "graph",
+    "trend"
+   ],
+   "tags": [
+    "decline",
+    "drop",
+    "loss"
+   ]
+  },
+  {
+   "file": "money_bag.png",
+   "name": "Money bag",
+   "glyph": "💰",
+   "keywords": [
+    "bag",
+    "dollar",
+    "money",
+    "moneybag"
+   ],
+   "tags": [
+    "money",
+    "revenue",
+    "profit",
+    "price",
+    "pricing",
+    "sales"
+   ]
+  },
+  {
+   "file": "money_with_wings.png",
+   "name": "Money with wings",
+   "glyph": "💸",
+   "keywords": [
+    "banknote",
+    "bill",
+    "fly",
+    "money",
+    "money with wings",
+    "wings"
+   ],
+   "tags": [
+    "spend",
+    "cost",
+    "payment",
+    "expense"
+   ]
+  },
+  {
+   "file": "dollar_banknote.png",
+   "name": "Dollar banknote",
+   "glyph": "💵",
+   "keywords": [
+    "banknote",
+    "bill",
+    "currency",
+    "dollar",
+    "money",
+    "note"
+   ],
+   "tags": [
+    "money",
+    "cash",
+    "dollar",
+    "payment"
+   ]
+  },
+  {
+   "file": "coin.png",
+   "name": "Coin",
+   "glyph": "🪙",
+   "keywords": [
+    "coin",
+    "gold",
+    "metal",
+    "money",
+    "silver",
+    "treasure"
+   ],
+   "tags": [
+    "coin",
+    "money",
+    "token"
+   ]
+  },
+  {
+   "file": "credit_card.png",
+   "name": "Credit card",
+   "glyph": "💳",
+   "keywords": [
+    "card",
+    "credit",
+    "money"
+   ],
+   "tags": [
+    "payment",
+    "card",
+    "checkout",
+    "billing",
+    "stripe",
+    "pay"
+   ]
+  },
+  {
+   "file": "receipt.png",
+   "name": "Receipt",
+   "glyph": "🧾",
+   "keywords": [
+    "accounting",
+    "bookkeeping",
+    "evidence",
+    "proof",
+    "receipt"
+   ],
+   "tags": [
+    "receipt",
+    "invoice",
+    "bill",
+    "billing"
+   ]
+  },
+  {
+   "file": "shopping_cart.png",
+   "name": "Shopping cart",
+   "glyph": "🛒",
+   "keywords": [
+    "cart",
+    "shopping",
+    "trolley"
+   ],
+   "tags": [
+    "shop",
+    "shopping",
+    "ecommerce",
+    "cart",
+    "store",
+    "buy",
+    "order"
+   ]
+  },
+  {
+   "file": "shopping_bags.png",
+   "name": "Shopping bags",
+   "glyph": "🛍️",
+   "keywords": [
+    "bag",
+    "hotel",
+    "shopping",
+    "shopping bags"
+   ],
+   "tags": [
+    "shopping"
+   ]
+  },
+  {
+   "file": "department_store.png",
+   "name": "Department store",
+   "glyph": "🏬",
+   "keywords": [
+    "department",
+    "store"
+   ],
+   "tags": [
+    "store",
+    "shop",
+    "retail"
+   ]
+  },
+  {
+   "file": "convenience_store.png",
+   "name": "Convenience store",
+   "glyph": "🏪",
+   "keywords": [
+    "convenience",
+    "store"
+   ],
+   "tags": [
+    "store",
+    "shop"
+   ]
+  },
+  {
+   "file": "briefcase.png",
+   "name": "Briefcase",
+   "glyph": "💼",
+   "keywords": [
+    "briefcase"
+   ],
+   "tags": [
+    "business",
+    "work",
+    "job",
+    "career",
+    "portfolio",
+    "professional"
+   ]
+  },
+  {
+   "file": "balance_scale.png",
+   "name": "Balance scale",
+   "glyph": "⚖️",
+   "keywords": [
+    "Libra",
+    "balance",
+    "justice",
+    "scale",
+    "zodiac"
+   ],
+   "tags": [
+    "legal",
+    "law",
+    "justice",
+    "compare",
+    "balance",
+    "terms",
+    "privacy"
+   ]
+  },
+  {
+   "file": "abacus.png",
+   "name": "Abacus",
+   "glyph": "🧮",
+   "keywords": [
+    "abacus",
+    "calculation"
+   ],
+   "tags": [
+    "calculate",
+    "count",
+    "math",
+    "accounting"
+   ]
+  },
+  {
+   "file": "heavy_dollar_sign.png",
+   "name": "Heavy dollar sign",
+   "glyph": "💲",
+   "keywords": [
+    "currency",
+    "dollar",
+    "heavy dollar sign",
+    "money"
+   ],
+   "tags": [
+    "price",
+    "pricing",
+    "cost"
+   ]
+  },
+  {
+   "file": "currency_exchange.png",
+   "name": "Currency exchange",
+   "glyph": "💱",
+   "keywords": [
+    "bank",
+    "currency",
+    "exchange",
+    "money"
+   ],
+   "tags": [
+    "currency",
+    "exchange",
+    "convert"
+   ]
+  },
+  {
+   "file": "ballot_box_with_ballot.png",
+   "name": "Ballot box with ballot",
+   "glyph": "🗳️",
+   "keywords": [
+    "ballot",
+    "ballot box with ballot",
+    "box"
+   ],
+   "tags": [
+    "vote",
+    "poll",
+    "survey"
+   ]
+  },
+  {
+   "file": "delivery_truck.png",
+   "name": "Delivery truck",
+   "glyph": "🚚",
+   "keywords": [
+    "delivery",
+    "truck"
+   ],
+   "tags": [
+    "delivery",
+    "shipping",
+    "logistics",
+    "order",
+    "food"
+   ]
+  },
+  {
+   "file": "airplane.png",
+   "name": "Airplane",
+   "glyph": "✈️",
+   "keywords": [
+    "aeroplane",
+    "airplane"
+   ],
+   "tags": [
+    "travel",
+    "flight",
+    "trip"
+   ]
+  },
+  {
+   "file": "luggage.png",
+   "name": "Luggage",
+   "glyph": "🧳",
+   "keywords": [
+    "luggage",
+    "packing",
+    "travel"
+   ],
+   "tags": [
+    "travel",
+    "trip",
+    "luggage"
+   ]
+  },
+  {
+   "file": "automobile.png",
+   "name": "Automobile",
+   "glyph": "🚗",
+   "keywords": [
+    "automobile",
+    "car"
+   ],
+   "tags": [
+    "car",
+    "drive"
+   ]
+  },
+  {
+   "file": "bicycle.png",
+   "name": "Bicycle",
+   "glyph": "🚲",
+   "keywords": [
+    "bicycle",
+    "bike"
+   ],
+   "tags": [
+    "bike",
+    "ride"
+   ]
+  },
+  {
+   "file": "hospital.png",
+   "name": "Hospital",
+   "glyph": "🏥",
+   "keywords": [
+    "doctor",
+    "hospital",
+    "medicine"
+   ],
+   "tags": [
+    "health",
+    "medical",
+    "hospital"
+   ]
+  },
+  {
+   "file": "stethoscope.png",
+   "name": "Stethoscope",
+   "glyph": "🩺",
+   "keywords": [
+    "doctor",
+    "heart",
+    "medicine",
+    "stethoscope"
+   ],
+   "tags": [
+    "health",
+    "doctor",
+    "diagnose",
+    "diagnosis",
+    "medical",
+    "check"
+   ]
+  },
+  {
+   "file": "pill.png",
+   "name": "Pill",
+   "glyph": "💊",
+   "keywords": [
+    "doctor",
+    "medicine",
+    "pill",
+    "sick"
+   ],
+   "tags": [
+    "medicine",
+    "health"
+   ]
+  },
+  {
+   "file": "adhesive_bandage.png",
+   "name": "Adhesive bandage",
+   "glyph": "🩹",
+   "keywords": [
+    "adhesive bandage",
+    "bandage"
+   ],
+   "tags": [
+    "fix",
+    "heal",
+    "patch"
+   ]
+  },
+  {
+   "file": "syringe.png",
+   "name": "Syringe",
+   "glyph": "💉",
+   "keywords": [
+    "medicine",
+    "needle",
+    "shot",
+    "sick",
+    "syringe"
+   ],
+   "tags": [
+    "inject",
+    "vaccine"
+   ]
+  },
+  {
+   "file": "thermometer.png",
+   "name": "Thermometer",
+   "glyph": "🌡️",
+   "keywords": [
+    "thermometer",
+    "weather"
+   ],
+   "tags": [
+    "temperature",
+    "health",
+    "measure"
+   ]
+  },
+  {
+   "file": "school.png",
+   "name": "School",
+   "glyph": "🏫",
+   "keywords": [
+    "building",
+    "school"
+   ],
+   "tags": [
+    "school",
+    "education"
+   ]
+  },
+  {
+   "file": "stadium.png",
+   "name": "Stadium",
+   "glyph": "🏟️",
+   "keywords": [
+    "stadium"
+   ],
+   "tags": [
+    "sports",
+    "event"
+   ]
+  },
+  {
+   "file": "hotel.png",
+   "name": "Hotel",
+   "glyph": "🏨",
+   "keywords": [
+    "building",
+    "hotel"
+   ],
+   "tags": [
+    "hotel",
+    "booking",
+    "stay"
+   ]
+  },
+  {
+   "file": "tent.png",
+   "name": "Tent",
+   "glyph": "⛺",
+   "keywords": [
+    "camping",
+    "tent"
+   ],
+   "tags": [
+    "camp",
+    "outdoors"
+   ]
+  },
+  {
+   "file": "desert_island.png",
+   "name": "Desert island",
+   "glyph": "🏝️",
+   "keywords": [
+    "desert",
+    "island"
+   ],
+   "tags": [
+    "vacation",
+    "remote"
+   ]
+  },
+  {
+   "file": "beach_with_umbrella.png",
+   "name": "Beach with umbrella",
+   "glyph": "🏖️",
+   "keywords": [
+    "beach",
+    "beach with umbrella",
+    "umbrella"
+   ],
+   "tags": [
+    "vacation",
+    "holiday",
+    "beach"
+   ]
+  },
+  {
+   "file": "hammer.png",
+   "name": "Hammer",
+   "glyph": "🔨",
+   "keywords": [
+    "hammer",
+    "tool"
+   ],
+   "tags": [
+    "build",
+    "hammer"
+   ]
+  },
+  {
+   "file": "pick.png",
+   "name": "Pick",
+   "glyph": "⛏️",
+   "keywords": [
+    "mining",
+    "pick",
+    "tool"
+   ],
+   "tags": [
+    "mine",
+    "dig"
+   ]
+  },
+  {
+   "file": "axe.png",
+   "name": "Axe",
+   "glyph": "🪓",
+   "keywords": [
+    "axe",
+    "chop",
+    "hatchet",
+    "split",
+    "wood"
+   ],
+   "tags": [
+    "cut",
+    "chop"
+   ]
+  },
+  {
+   "file": "screwdriver.png",
+   "name": "Screwdriver",
+   "glyph": "🪛",
+   "keywords": [
+    "screw",
+    "screwdriver",
+    "tool"
+   ],
+   "tags": [
+    "tool",
+    "fix"
+   ]
+  },
+  {
+   "file": "ladder.png",
+   "name": "Ladder",
+   "glyph": "🪜",
+   "keywords": [
+    "climb",
+    "ladder",
+    "rung",
+    "step"
+   ],
+   "tags": [
+    "climb",
+    "level",
+    "step",
+    "steps",
+    "progress"
+   ]
+  },
+  {
+   "file": "bucket.png",
+   "name": "Bucket",
+   "glyph": "🪣",
+   "keywords": [
+    "bucket",
+    "cask",
+    "pail",
+    "vat"
+   ],
+   "tags": [
+    "bucket",
+    "storage"
+   ]
+  },
+  {
+   "file": "magnifying_glass_tilted_left.png",
+   "name": "Magnifying glass tilted left",
+   "glyph": "🔍",
+   "keywords": [
+    "glass",
+    "magnifying",
+    "magnifying glass tilted left",
+    "search",
+    "tool"
+   ],
+   "tags": [
+    "search",
+    "find",
+    "seo",
+    "lookup",
+    "query",
+    "discover",
+    "explore",
+    "audit"
+   ]
+  },
+  {
+   "file": "magnifying_glass_tilted_right.png",
+   "name": "Magnifying glass tilted right",
+   "glyph": "🔎",
+   "keywords": [
+    "glass",
+    "magnifying",
+    "magnifying glass tilted right",
+    "search",
+    "tool"
+   ],
+   "tags": [
+    "search",
+    "find",
+    "inspect"
+   ]
+  },
+  {
+   "file": "flashlight.png",
+   "name": "Flashlight",
+   "glyph": "🔦",
+   "keywords": [
+    "electric",
+    "flashlight",
+    "light",
+    "tool",
+    "torch"
+   ],
+   "tags": [
+    "explore",
+    "find",
+    "discover"
+   ]
+  },
+  {
+   "file": "candle.png",
+   "name": "Candle",
+   "glyph": "🕯️",
+   "keywords": [
+    "candle",
+    "light"
+   ],
+   "tags": [
+    "light",
+    "candle"
+   ]
+  },
+  {
+   "file": "bubbles.png",
+   "name": "Bubbles",
+   "glyph": "🫧",
+   "keywords": [
+    "bubbles",
+    "burp",
+    "clean",
+    "soap",
+    "underwater"
+   ],
+   "tags": [
+    "bubbles",
+    "clean"
+   ]
+  },
+  {
+   "file": "soap.png",
+   "name": "Soap",
+   "glyph": "🧼",
+   "keywords": [
+    "bar",
+    "bathing",
+    "cleaning",
+    "lather",
+    "soap",
+    "soapdish"
+   ],
+   "tags": [
+    "clean",
+    "wash"
+   ]
+  },
+  {
+   "file": "sponge.png",
+   "name": "Sponge",
+   "glyph": "🧽",
+   "keywords": [
+    "absorbing",
+    "cleaning",
+    "porous",
+    "sponge"
+   ],
+   "tags": [
+    "clean",
+    "absorb"
+   ]
+  },
+  {
+   "file": "mirror.png",
+   "name": "Mirror",
+   "glyph": "🪞",
+   "keywords": [
+    "mirror",
+    "reflection",
+    "reflector",
+    "speculum"
+   ],
+   "tags": [
+    "mirror",
+    "reflect"
+   ]
+  },
+  {
+   "file": "glasses.png",
+   "name": "Glasses",
+   "glyph": "👓",
+   "keywords": [
+    "clothing",
+    "eye",
+    "eyeglasses",
+    "eyewear",
+    "glasses"
+   ],
+   "tags": [
+    "read",
+    "review"
+   ]
+  },
+  {
+   "file": "sunglasses.png",
+   "name": "Sunglasses",
+   "glyph": "🕶️",
+   "keywords": [
+    "dark",
+    "eye",
+    "eyewear",
+    "glasses",
+    "sunglasses"
+   ],
+   "tags": [
+    "cool",
+    "style"
+   ]
+  },
+  {
+   "file": "top_hat.png",
+   "name": "Top hat",
+   "glyph": "🎩",
+   "keywords": [
+    "clothing",
+    "hat",
+    "top",
+    "tophat"
+   ],
+   "tags": [
+    "magic",
+    "formal"
+   ]
+  },
+  {
+   "file": "necktie.png",
+   "name": "Necktie",
+   "glyph": "👔",
+   "keywords": [
+    "clothing",
+    "necktie",
+    "tie"
+   ],
+   "tags": [
+    "formal",
+    "business",
+    "interview"
+   ]
+  },
+  {
+   "file": "crossed_swords.png",
+   "name": "Crossed swords",
+   "glyph": "⚔️",
+   "keywords": [
+    "crossed",
+    "swords",
+    "weapon"
+   ],
+   "tags": [
+    "compete",
+    "competitor",
+    "competition",
+    "battle",
+    "versus"
+   ]
+  },
+  {
+   "file": "bow_and_arrow.png",
+   "name": "Bow and arrow",
+   "glyph": "🏹",
+   "keywords": [
+    "Sagittarius",
+    "archer",
+    "arrow",
+    "bow",
+    "bow and arrow",
+    "zodiac"
+   ],
+   "tags": [
+    "target",
+    "aim"
+   ]
+  },
+  {
+   "file": "boomerang.png",
+   "name": "Boomerang",
+   "glyph": "🪃",
+   "keywords": [
+    "australia",
+    "boomerang",
+    "rebound",
+    "repercussion"
+   ],
+   "tags": [
+    "return",
+    "retry"
+   ]
+  },
+  {
+   "file": "chains.png",
+   "name": "Chains",
+   "glyph": "⛓️",
+   "keywords": [
+    "chain",
+    "chains"
+   ],
+   "tags": [
+    "chain",
+    "dependencies"
+   ]
+  },
+  {
+   "file": "hook.png",
+   "name": "Hook",
+   "glyph": "🪝",
+   "keywords": [
+    "catch",
+    "crook",
+    "curve",
+    "ensnare",
+    "hook",
+    "selling point"
+   ],
+   "tags": [
+    "hook",
+    "hooks",
+    "catch"
+   ]
+  },
+  {
+   "file": "hot_beverage.png",
+   "name": "Hot beverage",
+   "glyph": "☕",
+   "keywords": [
+    "beverage",
+    "coffee",
+    "drink",
+    "hot",
+    "steaming",
+    "tea"
+   ],
+   "tags": [
+    "coffee",
+    "break",
+    "morning",
+    "tea"
+   ]
+  },
+  {
+   "file": "teacup_without_handle.png",
+   "name": "Teacup without handle",
+   "glyph": "🍵",
+   "keywords": [
+    "beverage",
+    "cup",
+    "drink",
+    "tea",
+    "teacup",
+    "teacup without handle"
+   ],
+   "tags": [
+    "tea"
+   ]
+  },
+  {
+   "file": "pizza.png",
+   "name": "Pizza",
+   "glyph": "🍕",
+   "keywords": [
+    "cheese",
+    "pizza",
+    "slice"
+   ],
+   "tags": [
+    "food",
+    "pizza",
+    "order"
+   ]
+  },
+  {
+   "file": "fork_and_knife_with_plate.png",
+   "name": "Fork and knife with plate",
+   "glyph": "🍽️",
+   "keywords": [
+    "cooking",
+    "fork",
+    "fork and knife with plate",
+    "knife",
+    "plate"
+   ],
+   "tags": [
+    "food",
+    "restaurant",
+    "meal",
+    "dinner"
+   ]
+  },
+  {
+   "file": "hamburger.png",
+   "name": "Hamburger",
+   "glyph": "🍔",
+   "keywords": [
+    "burger",
+    "hamburger"
+   ],
+   "tags": [
+    "food",
+    "fast"
+   ]
+  },
+  {
+   "file": "takeout_box.png",
+   "name": "Takeout box",
+   "glyph": "🥡",
+   "keywords": [
+    "oyster pail",
+    "takeout box"
+   ],
+   "tags": [
+    "takeout",
+    "food",
+    "delivery",
+    "order"
+   ]
+  },
+  {
+   "file": "cooking.png",
+   "name": "Cooking",
+   "glyph": "🍳",
+   "keywords": [
+    "breakfast",
+    "cooking",
+    "egg",
+    "frying",
+    "pan"
+   ],
+   "tags": [
+    "cook",
+    "cooking",
+    "recipe",
+    "kitchen"
+   ]
+  },
+  {
+   "file": "green_salad.png",
+   "name": "Green salad",
+   "glyph": "🥗",
+   "keywords": [
+    "food",
+    "green",
+    "salad"
+   ],
+   "tags": [
+    "healthy",
+    "food",
+    "salad"
+   ]
+  },
+  {
+   "file": "red_apple.png",
+   "name": "Red apple",
+   "glyph": "🍎",
+   "keywords": [
+    "apple",
+    "fruit",
+    "red"
+   ],
+   "tags": [
+    "apple",
+    "fruit",
+    "education"
+   ]
+  },
+  {
+   "file": "lemon.png",
+   "name": "Lemon",
+   "glyph": "🍋",
+   "keywords": [
+    "citrus",
+    "fruit",
+    "lemon"
+   ],
+   "tags": [
+    "lemon",
+    "fruit"
+   ]
+  },
+  {
+   "file": "avocado.png",
+   "name": "Avocado",
+   "glyph": "🥑",
+   "keywords": [
+    "avocado",
+    "food",
+    "fruit"
+   ],
+   "tags": [
+    "avocado"
+   ]
+  },
+  {
+   "file": "birthday_cake.png",
+   "name": "Birthday cake",
+   "glyph": "🎂",
+   "keywords": [
+    "birthday",
+    "cake",
+    "celebration",
+    "dessert",
+    "pastry",
+    "sweet"
+   ],
+   "tags": [
+    "birthday",
+    "celebrate"
+   ]
+  },
+  {
+   "file": "cookie.png",
+   "name": "Cookie",
+   "glyph": "🍪",
+   "keywords": [
+    "cookie",
+    "dessert",
+    "sweet"
+   ],
+   "tags": [
+    "cookie",
+    "cookies",
+    "consent"
+   ]
+  },
+  {
+   "file": "honey_pot.png",
+   "name": "Honey pot",
+   "glyph": "🍯",
+   "keywords": [
+    "honey",
+    "honeypot",
+    "pot",
+    "sweet"
+   ],
+   "tags": [
+    "honey",
+    "sweet"
+   ]
+  },
+  {
+   "file": "ice_cream.png",
+   "name": "Ice cream",
+   "glyph": "🍨",
+   "keywords": [
+    "cream",
+    "dessert",
+    "ice",
+    "sweet"
+   ],
+   "tags": [
+    "dessert",
+    "sweet"
+   ]
+  },
+  {
+   "file": "owl.png",
+   "name": "Owl",
+   "glyph": "🦉",
+   "keywords": [
+    "bird",
+    "owl",
+    "wise"
+   ],
+   "tags": [
+    "wisdom",
+    "learn",
+    "night",
+    "owl"
+   ]
+  },
+  {
+   "file": "fox.png",
+   "name": "Fox",
+   "glyph": "🦊",
+   "keywords": [
+    "face",
+    "fox"
+   ],
+   "tags": [
+    "clever",
+    "fox"
+   ]
+  },
+  {
+   "file": "cat.png",
+   "name": "Cat",
+   "glyph": "🐈",
+   "keywords": [
+    "cat",
+    "pet"
+   ],
+   "tags": [
+    "cat",
+    "pet"
+   ]
+  },
+  {
+   "file": "dog.png",
+   "name": "Dog",
+   "glyph": "🐕",
+   "keywords": [
+    "dog",
+    "pet"
+   ],
+   "tags": [
+    "dog",
+    "pet"
+   ]
+  },
+  {
+   "file": "octopus.png",
+   "name": "Octopus",
+   "glyph": "🐙",
+   "keywords": [
+    "octopus"
+   ],
+   "tags": [
+    "multi",
+    "multitask",
+    "many",
+    "github"
+   ]
+  },
+  {
+   "file": "turtle.png",
+   "name": "Turtle",
+   "glyph": "🐢",
+   "keywords": [
+    "terrapin",
+    "tortoise",
+    "turtle"
+   ],
+   "tags": [
+    "slow"
+   ]
+  },
+  {
+   "file": "snail.png",
+   "name": "Snail",
+   "glyph": "🐌",
+   "keywords": [
+    "snail"
+   ],
+   "tags": [
+    "slow"
+   ]
+  },
+  {
+   "file": "honeybee.png",
+   "name": "Honeybee",
+   "glyph": "🐝",
+   "keywords": [
+    "bee",
+    "honeybee",
+    "insect"
+   ],
+   "tags": [
+    "busy",
+    "work",
+    "bee",
+    "productivity"
+   ]
+  },
+  {
+   "file": "butterfly.png",
+   "name": "Butterfly",
+   "glyph": "🦋",
+   "keywords": [
+    "butterfly",
+    "insect",
+    "pretty"
+   ],
+   "tags": [
+    "transform",
+    "change"
+   ]
+  },
+  {
+   "file": "unicorn.png",
+   "name": "Unicorn",
+   "glyph": "🦄",
+   "keywords": [
+    "face",
+    "unicorn"
+   ],
+   "tags": [
+    "unicorn",
+    "startup",
+    "magic"
+   ]
+  },
+  {
+   "file": "dragon.png",
+   "name": "Dragon",
+   "glyph": "🐉",
+   "keywords": [
+    "dragon",
+    "fairy tale"
+   ],
+   "tags": [
+    "dragon",
+    "powerful"
+   ]
+  },
+  {
+   "file": "parrot.png",
+   "name": "Parrot",
+   "glyph": "🦜",
+   "keywords": [
+    "bird",
+    "parrot",
+    "pirate",
+    "talk"
+   ],
+   "tags": [
+    "repeat",
+    "copy",
+    "speak"
+   ]
+  },
+  {
+   "file": "spider_web.png",
+   "name": "Spider web",
+   "glyph": "🕸️",
+   "keywords": [
+    "spider",
+    "web"
+   ],
+   "tags": [
+    "web",
+    "crawl",
+    "crawler",
+    "scrape",
+    "network"
+   ]
+  },
+  {
+   "file": "feather.png",
+   "name": "Feather",
+   "glyph": "🪶",
+   "keywords": [
+    "bird",
+    "feather",
+    "flight",
+    "light",
+    "plumage"
+   ],
+   "tags": [
+    "light",
+    "write",
+    "quill"
+   ]
+  },
+  {
+   "file": "paw_prints.png",
+   "name": "Paw prints",
+   "glyph": "🐾",
+   "keywords": [
+    "feet",
+    "paw",
+    "paw prints",
+    "print"
+   ],
+   "tags": [
+    "track",
+    "footprints"
+   ]
+  },
+  {
+   "file": "penguin.png",
+   "name": "Penguin",
+   "glyph": "🐧",
+   "keywords": [
+    "bird",
+    "penguin"
+   ],
+   "tags": [
+    "linux"
+   ]
+  },
+  {
+   "file": "whale.png",
+   "name": "Whale",
+   "glyph": "🐋",
+   "keywords": [
+    "whale"
+   ],
+   "tags": [
+    "docker",
+    "big"
+   ]
+  },
+  {
+   "file": "elephant.png",
+   "name": "Elephant",
+   "glyph": "🐘",
+   "keywords": [
+    "elephant"
+   ],
+   "tags": [
+    "memory",
+    "remember",
+    "postgres",
+    "big"
+   ]
+  },
+  {
+   "file": "shark.png",
+   "name": "Shark",
+   "glyph": "🦈",
+   "keywords": [
+    "fish",
+    "shark"
+   ],
+   "tags": [
+    "aggressive"
+   ]
+  },
+  {
+   "file": "frog.png",
+   "name": "Frog",
+   "glyph": "🐸",
+   "keywords": [
+    "face",
+    "frog"
+   ],
+   "tags": [
+    "frog"
+   ]
+  },
+  {
+   "file": "lion.png",
+   "name": "Lion",
+   "glyph": "🦁",
+   "keywords": [
+    "Leo",
+    "face",
+    "lion",
+    "zodiac"
+   ],
+   "tags": [
+    "brave",
+    "leader"
+   ]
+  },
+  {
+   "file": "rabbit.png",
+   "name": "Rabbit",
+   "glyph": "🐇",
+   "keywords": [
+    "bunny",
+    "pet",
+    "rabbit"
+   ],
+   "tags": [
+    "fast",
+    "quick"
+   ]
+  }
+ ]
+}

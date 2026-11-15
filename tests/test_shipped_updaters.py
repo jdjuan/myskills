@@ -22,7 +22,9 @@ SHIPPED = BASE / 'tests/fixtures/shipped_updaters'
 # These updaters reject every release from the renamed repository: they require download URLs under
 # jdjuan/skill-dashboard, and v0.1.0-v0.1.13 also require the older 11-file archive. They can only
 # move forward by running install.sh / install.ps1 again. Never add to this list to make a release pass.
-STRANDED = {'v0.1.0-v0.1.13', 'v0.1.14-v0.1.15'}
+# v0.1.16-v0.1.22 required the archive to match its exact file list, so it rejects releases that
+# bundle icons/fluent. Accepted deliberately (Juan, 14 Nov 2026): affected installs rerun install.sh.
+STRANDED = {'v0.1.0-v0.1.13', 'v0.1.14-v0.1.15', 'v0.1.16-v0.1.22'}
 TAG = 'v999.0.0'
 
 

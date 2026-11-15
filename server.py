@@ -20,7 +20,7 @@ import storage
 import updates
 import skill_updates
 import services
-from portable import linked, recycle_windows
+from portable import claude_app_sync, linked, recycle_windows
 from usage import read_usage
 from pathlib import Path
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer as HTTPThreadingServer
@@ -301,6 +301,154 @@ def skill_icon(folder):
     return {}
 
 
+
+# Default icons: Microsoft Fluent Emoji (MIT), shipped in icons/fluent with every release.
+ICON_CREDIT = {'author': 'Microsoft Fluent Emoji (MIT)', 'authorUrl': 'https://github.com/microsoft',
+               'sourceUrl': 'https://github.com/microsoft/fluentui-emoji'}
+ICON_STOPWORDS = set('a an and are as at be by for from in into is it its of on or that the this to use used uses using when with without your you not only all any can do does new one such than then their them these they via what which who will'.split())
+_icon_cache = {'dir': None, 'mtime': None, 'icons': []}
+
+
+def icon_set_dirs():
+    return [Path(__file__).resolve().parent / 'icons/fluent']
+
+
+def icon_words(text):
+    words = set()
+    for word in re.findall(r'[a-z0-9]+', str(text).lower()):
+        if len(word) < 2 or word in ICON_STOPWORDS:
+            continue
+        words.add(word)
+        for suffix in ('ing', 'es', 's'):
+            if word.endswith(suffix) and len(word) - len(suffix) >= 3:
+                words.add(word[:-len(suffix)])
+                break
+    return words
+
+
+def load_icon_set():
+    """Return [(file, weighted terms)] from the first readable icon set, cached by mtime."""
+    for directory in icon_set_dirs():
+        index = directory / 'index.json'
+        try:
+            mtime = index.stat().st_mtime
+            if _icon_cache['dir'] == directory and _icon_cache['mtime'] == mtime:
+                return directory, _icon_cache['icons']
+            icons = []
+            for entry in json.loads(index.read_text(encoding='utf-8')).get('icons', []):
+                name = Path(str(entry.get('file', ''))).name
+                if not name.endswith('.png'):
+                    continue
+                terms = {}
+                for word in icon_words(' '.join(entry.get('keywords', []))) | icon_words(entry.get('name', '')):
+                    terms[word] = 2
+                for word in icon_words(' '.join(entry.get('tags', []))):
+                    terms[word] = 3
+                icons.append((name, terms))
+            _icon_cache.update(dir=directory, mtime=mtime, icons=icons)
+            return directory, icons
+        except (OSError, ValueError, AttributeError, TypeError):
+            continue
+    return None, []
+
+
+def suggest_icon(name, description, used=None):
+    """Pick the semantically closest bundled icon, or none when nothing is close enough."""
+    directory, icons = load_icon_set()
+    if not icons:
+        return {}
+    title = icon_words(str(name).replace('-', ' '))
+    words = {word: 2 for word in icon_words(description)} | {word: 4 for word in title}
+    best, best_score = None, 0
+    for file, terms in icons:
+        score = sum(weight * terms[word] for word, weight in words.items() if word in terms)
+        score -= 2 * (used or {}).get(file, 0)
+        if score > best_score:
+            best, best_score = file, score
+    if best_score < 8:
+        return {}
+    try:
+        path = (directory / best).resolve()
+        if not path.is_relative_to(directory.resolve()) or path.stat().st_size > 512 * 1024:
+            return {}
+        data = path.read_bytes()
+    except OSError:
+        return {}
+    if data[:8] != b'\x89PNG\r\n\x1a\n':
+        return {}
+    if used is not None:
+        used[best] = used.get(best, 0) + 1
+    return {'icon': 'data:image/png;base64,' + base64.b64encode(data).decode('ascii'),
+            'iconCredit': dict(ICON_CREDIT), 'iconSuggested': True}
+
+
+
+def icon_choices():
+    """Every bundled icon as inline PNG data for the picker."""
+    directory, icons = load_icon_set()
+    result = []
+    for file, terms in icons:
+        try:
+            data = (directory / file).read_bytes()
+        except OSError:
+            continue
+        if data[:8] == b'\x89PNG\r\n\x1a\n':
+            result.append({'file': file, 'name': file[:-4].replace('_', ' '), 'terms': sorted(terms),
+                           'icon': 'data:image/png;base64,' + base64.b64encode(data).decode('ascii')})
+    return result
+
+
+def write_icon_metadata(folder, value):
+    """Point interface.icon_small/icon_large at value (or remove them when value is None)."""
+    metadata = folder / 'agents/openai.yaml'
+    lines = metadata.read_text(encoding='utf-8').splitlines() if metadata.exists() else []
+    output, in_interface, seen_interface = [], False, False
+    for line in lines:
+        if line and not line[0].isspace() and not line.startswith('#'):
+            if in_interface and value:
+                output += [f'  icon_small: "{value}"', f'  icon_large: "{value}"']
+            in_interface = line.strip() == 'interface:'
+            seen_interface = seen_interface or in_interface
+            output.append(line)
+            continue
+        if in_interface and re.match(r'^  (icon_small|icon_large):', line):
+            continue
+        output.append(line)
+    if in_interface and value:
+        output += [f'  icon_small: "{value}"', f'  icon_large: "{value}"']
+    if not seen_interface and value:
+        output += ['interface:', f'  icon_small: "{value}"', f'  icon_large: "{value}"']
+    metadata.parent.mkdir(parents=True, exist_ok=True)
+    metadata.write_text('\n'.join(output) + '\n', encoding='utf-8')
+
+
+def set_skill_icon(skill_id, file):
+    """Save a bundled icon into a personal skill folder, or return the skill to its automatic icon."""
+    with DELETE_LOCK:
+        item = next((s for s in skills() if s['id'] == skill_id), None)
+        if item is None or not item['deletable']:
+            raise ValueError('Icons can be changed on personal skills only.')
+        source = None
+        if file is not None:
+            directory, icons = load_icon_set()
+            if not isinstance(file, str) or file not in {name for name, _ in icons}:
+                raise ValueError('Choose an icon from the list.')
+            source = directory / file
+        for copy in dict.fromkeys(str(Path(folder).resolve()) for folder in item['copies']):
+            folder = Path(copy)
+            icon, credit = folder / 'assets/icon.png', folder / 'assets/icon.credit.json'
+            if source:
+                icon.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(source, icon)
+                credit.write_text(json.dumps(ICON_CREDIT, indent=2) + '\n', encoding='utf-8')
+                write_icon_metadata(folder, './assets/icon.png')
+            else:
+                write_icon_metadata(folder, None)
+                for path in (icon, credit):
+                    path.unlink(missing_ok=True)
+        return {'message': 'Icon saved.' if source else 'Automatic icon restored.'}
+
+
 def picker_name(folder, fallback):
     """Read the picker title from the interface block without YAML dependencies."""
     try:
@@ -576,11 +724,14 @@ def skills():
             plugin = ''
             if source == 'Personal' and relative.parts[0] == '.system':
                 group = 'System'
+            claude_app = source == 'Personal' and len(relative.parts) > 2 and claude_app_sync(root / relative.parts[0])
+            if claude_app:
+                group = 'System'
             if source == 'Plugin cache':
                 parts = relative.parts
                 plugin = parts[1] if len(parts) > 2 else parts[0]
                 group = 'External'
-            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, folder=path.parent.name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)],
+            found.append(dict(id=hashlib.sha256(str(path).encode()).hexdigest()[:20], name=name, folder=path.parent.name, displayName=picker_name(path.parent, name), **skill_icon(path.parent), wordCount=len(raw.split()), instructionBytes=len(raw.encode("utf-8")), description=description, source=group, plugin=plugin, path=str(path), content=raw, modified=stat.st_mtime, deletable=group != 'System' and safe_folder(path.parent), copies=[str(path.parent)], claudeApp=claude_app,
                               linkedFrom=[target] if source == 'Personal' and (target := link_source(path.parent, root)) else []))
     # Collapse identical copies within each origin; retain different versions as distinct entries.
     unique = {}
@@ -597,7 +748,9 @@ def skills():
     except (OSError, ValueError):
         credits = {}
     for item in unique.values():
-        if item['source'] == 'System':
+        if item.pop('claudeApp'):
+            item['origin'] = {'kind': 'claude-app', 'label': 'Synced by the Claude app'}
+        elif item['source'] == 'System':
             item['origin'] = {'kind': 'system', 'label': 'Built in'}
         elif item['plugin']:
             item['origin'] = {'kind': 'plugin', 'label': 'Plugin'}
@@ -614,7 +767,12 @@ def skills():
                               **({'source': value['source'], 'url': 'https://github.com/' + value['source']} if value.get('source') else {}),
                               **({'skillPath': value['skillPath']} if value.get('skillPath') else {})}
         item['usage'] = read_usage(item['copies'])
-    return skill_warnings(sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin'])))
+    ordered = sorted(unique.values(), key=lambda s: (s['name'].lower(), s['source'], s['plugin']))
+    used = {}
+    for item in ordered:
+        if not item.get('icon'):
+            item.update(suggest_icon(item['name'], item['description'], used))
+    return skill_warnings(ordered)
 
 class Handler(BaseHTTPRequestHandler):
     def json_response(self, payload, status=200):
@@ -633,7 +791,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/forget'):
+        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/forget', '/api/icon'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -677,6 +835,8 @@ class Handler(BaseHTTPRequestHandler):
                 return self.json_response(updates.request_update(DATA_DIR))
             if not isinstance(payload.get('id'), str):
                 raise ValueError('Invalid skill')
+            if self.path == '/api/icon':
+                return self.json_response(set_skill_icon(payload['id'], payload.get('file')))
             if self.path == '/api/customize':
                 return self.json_response(customize_skill(payload['id'], payload.get('revision')))
             if self.path == '/api/place':
@@ -697,6 +857,8 @@ class Handler(BaseHTTPRequestHandler):
         route = self.path.split('?')[0]
         if route == '/api/backup':
             return self.json_response(BACKUP.status() if BACKUP else {'available': False, 'busy': False, 'message': 'GitHub backup is unavailable.'})
+        if route == '/api/icons':
+            return self.json_response({'icons': icon_choices()})
         if route == '/api/health':
             return self.json_response({'application': 'skill-dashboard', 'pid': os.getpid()})
         if route == '/api/catalog':

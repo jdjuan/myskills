@@ -531,7 +531,10 @@ class GitHubBackup:
         from portable import linked
         files, skills, seen, permissions = {}, [], set(), {}
         visited = set()
+        from portable import claude_app_sync
         protected = [root.resolve() / '.system' for root in self.roots.values()]
+        # The Claude desktop app restores its synced copies itself; they are not the user's to back up.
+        protected += [root.resolve() / 'synced' for root in self.roots.values() if claude_app_sync(root / 'synced')]
         for agent in ('codex', 'claude'):
             if agent in self.roots:
                 protected.append(self.roots[agent].parent.resolve() / 'plugins/cache')

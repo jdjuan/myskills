@@ -28,7 +28,8 @@ TOKEN = re.compile(r'[a-f0-9]{32}\Z')
 SKIP_FILES = {'usage.jsonl', '.DS_Store'}
 SKIP_DIRS = {'.git', '__pycache__', '.venv', 'node_modules'}
 # Local presentation files (picker name, icon) survive updates: upstream versions are ignored.
-PRESERVED_FILES = {'agents/openai.yaml', 'assets/flaticon.png', 'assets/flaticon.credit.json'}
+PRESERVED_FILES = {'agents/openai.yaml', 'assets/icon.png', 'assets/icon.credit.json',
+                   'assets/flaticon.png', 'assets/flaticon.credit.json'}
 
 
 def now():

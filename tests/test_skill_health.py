@@ -172,3 +172,26 @@ class StaleCatalogTests(HealthBase):
 
 if __name__ == '__main__':
     unittest.main()
+
+
+class ClaudeAppSyncTests(HealthBase):
+    def sync(self, root):
+        bucket = root / 'synced/account-1'
+        make_skill(bucket / 'docx')
+        (bucket / 'manifest.json').write_text('{"skills": []}', encoding='utf-8')
+        return bucket
+
+    def test_synced_skills_are_read_only_system_skills(self):
+        self.sync(self.agents)
+        make_skill(self.agents / 'docx-notes')
+        items = {item['name']: item for item in server.skills()}
+        self.assertEqual(items['docx']['source'], 'System')
+        self.assertEqual(items['docx']['origin']['kind'], 'claude-app')
+        self.assertFalse(items['docx']['deletable'])
+        self.assertEqual(items['docx']['warnings'], [])
+        self.assertEqual(items['docx-notes']['source'], 'Mine')
+
+    def test_a_personal_folder_named_synced_stays_personal(self):
+        make_skill(self.agents / 'synced/mine/notes')
+        item = next(item for item in server.skills() if item['name'] == 'notes')
+        self.assertEqual((item['source'], item['origin']['kind']), ('Mine', 'local'))
