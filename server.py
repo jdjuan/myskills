@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Loopback-only skills library. Python standard library only."""
 import argparse
+from collections import Counter
 import base64
 import struct
 from urllib.parse import urlsplit
@@ -128,7 +129,10 @@ def catalog_keys(item):
 
 
 def matches_rule(item, rule):
-    keys = catalog_keys(item)
+    return matches_rule_keys(catalog_keys(item), rule)
+
+
+def matches_rule_keys(keys, rule):
     if any(key in rule.get('excluded_skills', []) for key in keys):
         return False
     members = [member if isinstance(member, str) else member['name'] for member in rule.get('skills', [])]
@@ -697,30 +701,95 @@ def forget_catalog_entry(name, replacement=None, expected=None):
             raise storage.ConflictError('The catalog changed. Reload before changing it.')
         if name not in catalog_references(config):
             raise ValueError('That entry is no longer in your catalog.')
-        new = catalog_keys(target)[0] if target else None
-        for group in [config['fallback_group'], *config['groups'], *config.get('compact_sections', [])]:
-            members, keys = [], set(catalog_keys(target)) if target else set()
-            already = any((m if isinstance(m, str) else m['name']) in keys for m in group.get('skills', []))
-            for member in group.get('skills', []):
-                if (member if isinstance(member, str) else member['name']) != name:
-                    members.append(member)
-                elif new and not already:
-                    members.append(new if isinstance(member, str) else {**member, 'name': new})
-            if 'skills' in group:
-                group['skills'] = members
-            if name in group.get('excluded_skills', []):
-                group['excluded_skills'] = [n for n in group['excluded_skills'] if n != name]
-                if new and new not in group['excluded_skills']:
-                    group['excluded_skills'].append(new)
-        credits = config.get('installed_skills', {})
-        if name in credits:
-            credit = credits.pop(name)
-            if new and not any(key in credits for key in catalog_keys(target)):
-                credits[new] = credit
+        replace_catalog_entry(config, name, catalog_keys(target) if target else [])
         storage.save_catalog(config, before, DATA_DIR)
         if target:
             return {'message': 'Catalog places moved to ' + target['displayName'] + '.'}
         return {'message': '“' + name + '” removed from your catalog.'}
+
+
+def replace_catalog_entry(config, name, replacement_keys):
+    new = next(iter(replacement_keys), None)
+    keys = set(replacement_keys)
+    for group in [config['fallback_group'], *config['groups'], *config.get('compact_sections', [])]:
+        members = []
+        already = any(member_name(member) in keys for member in group.get('skills', []))
+        for member in group.get('skills', []):
+            if member_name(member) != name:
+                members.append(member)
+            elif new and not already:
+                members.append(new if isinstance(member, str) else {**member, 'name': new})
+        if 'skills' in group:
+            group['skills'] = members
+        if name in group.get('excluded_skills', []):
+            group['excluded_skills'] = [n for n in group['excluded_skills'] if n != name]
+            if new and new not in group['excluded_skills']:
+                group['excluded_skills'].append(new)
+    credits = config.get('installed_skills', {})
+    if name in credits:
+        credit = credits.pop(name)
+        if new and not any(key in credits for key in keys):
+            credits[new] = credit
+
+
+def folder_rename_state(entries):
+    counts = Counter(key for item in entries for key in catalog_keys(item))
+    folders = {}
+    for item in entries:
+        if not item.get('deletable') or item['source'] != 'Mine' or len(item['copies']) != 1:
+            continue
+        keys = catalog_keys(item)
+        if any(counts[key] != 1 for key in keys):
+            continue
+        try:
+            stat = Path(item['copies'][0]).stat()
+        except OSError:
+            continue
+        # Creation time distinguishes a renamed folder from a reused file ID.
+        birth = getattr(stat, 'st_birthtime_ns', getattr(stat, 'st_birthtime', None))
+        if stat.st_ino and birth is not None:
+            folders[f'{stat.st_dev}:{stat.st_ino}:{birth}'] = keys
+    return folders, counts
+
+
+def read_folder_snapshot(path):
+    try:
+        saved = storage.read_json(path, {})
+    except (OSError, ValueError):
+        return {}
+    if not isinstance(saved, dict):
+        return {}
+    return {identity: keys for identity, keys in saved.items()
+            if isinstance(keys, list) and all(isinstance(key, str) for key in keys)}
+
+
+def reconcile_skill_renames():
+    with DELETE_LOCK:
+        entries = skills()
+        config = read_catalog()
+        before = storage.revision(config)
+        path = DATA_DIR / 'skill-folders.json'
+        previous = read_folder_snapshot(path)
+        current, counts = folder_rename_state(entries)
+        for identity, keys in current.items():
+            old_keys = previous.get(identity, [])
+            if not old_keys or old_keys == keys or any(key in counts and key not in keys for key in old_keys):
+                continue
+            matched = [rule for rule in [*config['groups'], *config.get('compact_sections', [])]
+                       if matches_rule_keys(old_keys, rule)]
+            for old in old_keys:
+                if old not in keys:
+                    replace_catalog_entry(config, old, keys)
+            # A prefix can stop matching after a rename. Keep the previous
+            # membership as an explicit entry when the new name is eligible.
+            for rule in matched:
+                if not matches_rule_keys(keys, rule) and not set(keys).intersection(rule.get('excluded_skills', [])):
+                    rule.setdefault('skills', []).append(keys[0])
+        if storage.revision(config) != before:
+            storage.save_catalog(config, before, DATA_DIR)
+        if current != previous:
+            storage.atomic_json(path, current)
+        return {'ok': True}
 
 
 def skills():
@@ -818,7 +887,7 @@ class Handler(BaseHTTPRequestHandler):
             return self.json_response({'error': 'Invalid host'}, 403)
         if self.headers.get('Origin') != 'http://' + host or self.headers.get('X-Library-Token') != TOKEN:
             return self.json_response({'error': 'Refresh this page before making changes.'}, 403)
-        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/forget', '/api/icon'):
+        if self.path not in ('/api/delete', '/api/skill-updates', '/api/place', '/api/customize', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/forget', '/api/icon', '/api/skill-renames'):
             return self.json_response({'error': 'Not found'}, 404)
         try:
             length = int(self.headers.get('Content-Length', '0'))
@@ -843,6 +912,8 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == '/api/catalog':
                 storage.save_catalog(payload.get('catalog'), payload.get('revision'), DATA_DIR)
                 return self.json_response({'message': 'Organization saved.'})
+            if self.path == '/api/skill-renames':
+                return self.json_response(reconcile_skill_renames())
             if self.path == '/api/forget':
                 return self.json_response(forget_catalog_entry(payload.get('name'), payload.get('replacement'), payload.get('revision')))
             if self.path == '/api/backup':
@@ -910,7 +981,9 @@ class Handler(BaseHTTPRequestHandler):
             config = read_catalog()
             groups = purpose_groups(entries, config)
             issues = missing_catalog_entries(entries, config) + broken_links()
-            data = json.dumps(dict(skills=entries, issues=issues, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
+            folders, _ = folder_rename_state(entries)
+            renames_pending = folders != read_folder_snapshot(DATA_DIR / 'skill-folders.json')
+            data = json.dumps(dict(skills=entries, issues=issues, renamesPending=renames_pending, skillUpdates=updater.status(), groups=groups, display=config.get('display', {}), compactSections=config.get('compact_sections', []), catalogRevision=storage.revision(config), platform=sys.platform, uiRevision=hashlib.sha256((BASE / 'dist/index.html').read_bytes()).hexdigest(), token=TOKEN), ensure_ascii=False).encode()
             mime = 'application/json; charset=utf-8'
         elif route in ('/', '/index.html'):
             data = (BASE / 'dist/index.html').read_bytes()

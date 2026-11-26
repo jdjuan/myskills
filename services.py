@@ -304,6 +304,8 @@ class GitHubBackup:
     # non-forced ref update to the same commit, so repeating it is safe.
     RETRY_DELAYS = (3, 10, 30)
     RETRY_STATUSES = {500, 502, 503, 504}
+    DAILY_INTERVAL = 24 * 60 * 60
+    FAILED_BACKUP_RETRY = 60 * 60
     BATCH_ENTRIES = 250
     BATCH_INLINE = 1024 * 1024
 
@@ -317,6 +319,9 @@ class GitHubBackup:
         self.state = {'busy': False}
         import storage
         prior = storage.read_json(self.directory / 'github-backup-status.json', {})
+        self.state.update({key: prior[key] for key in ('lastAttempt', 'backupError') if key in prior})
+        if prior.get('backupInProgress'):
+            self.state.update(backupInProgress=False, backupError='The previous backup was interrupted.')
         if prior.get('running'):
             self.state.update(message='The previous operation was interrupted. Retry it to continue.', running=False, preview=None)
         self.stop_event = threading.Event()
@@ -671,6 +676,16 @@ class GitHubBackup:
         self.backup()
 
     def backup(self):
+        import updates
+        self.report(lastAttempt=updates.now(), backupInProgress=True)
+        try:
+            self.upload_backup()
+        except Exception as error:
+            self.report(backupInProgress=False, backupError=str(error))
+            raise
+        self.report(backupInProgress=False, backupError=None)
+
+    def upload_backup(self):
         import base64
         import updates
         config = self.config()
@@ -919,19 +934,26 @@ class GitHubBackup:
 
     def start_scheduler(self, interval=30):
         import threading
-        from datetime import datetime, timezone
-        last_attempt = [0.0]
+        from datetime import datetime
+        import time
+
+        def timestamp(value):
+            try:
+                return datetime.fromisoformat(value).timestamp()
+            except (TypeError, ValueError, OverflowError, OSError):
+                return 0
+
         def schedule():
-            import time
             while not self.stop_event.wait(interval):
-                config = self.config()
-                if not config.get('enabled') or not config.get('daily'):
+                state = self.status()
+                if not state['enabled'] or not state['daily'] or state['busy']:
+                    continue
+                now = time.time()
+                if (now - timestamp(state['lastSuccess']) < self.DAILY_INTERVAL
+                        or now - timestamp(state.get('lastAttempt')) < self.FAILED_BACKUP_RETRY):
                     continue
                 try:
-                    last = datetime.fromisoformat(config['lastSuccess']).timestamp() if config.get('lastSuccess') else 0
-                    if time.time() - max(last, last_attempt[0]) >= 86400:
-                        self.submit('backup')
-                        last_attempt[0] = time.time()
+                    self.submit('backup')
                 except ValueError:
-                    pass
+                    pass  # A manual operation acquired the lock first.
         threading.Thread(target=schedule, daemon=True).start()

@@ -277,6 +277,7 @@ class BackupTests(unittest.TestCase):
         self.backup.enable('skills-backup')
         config = self.backup.config(); config.update(daily=True, lastSuccess='2000-01-01T00:00:00+00:00')
         self.backup.save_config(config)
+        self.backup.report(lastAttempt=config['lastSuccess'])
         before = len(self.remote.calls)
         self.backup.start_scheduler(interval=.01)
         deadline = time.monotonic() + 3
@@ -285,6 +286,42 @@ class BackupTests(unittest.TestCase):
         self.backup.stop_event.set()
         if self.backup.thread: self.backup.thread.join(timeout=3)
         self.assertFalse(self.backup.config()['lastSuccess'].startswith('2000'))
+        self.assertGreater(len(self.remote.calls), before)
+
+    def test_daily_scheduler_retries_failed_backup_after_restart(self):
+        import time
+        from datetime import datetime, timedelta, timezone
+
+        self.backup.enable('skills-backup')
+        config = self.backup.config()
+        config.update(daily=True, lastSuccess='2000-01-01T00:00:00+00:00')
+        self.backup.save_config(config)
+        (self.skill / 'SKILL.md').write_text('Changed before the failed backup')
+        self.remote.reject_push = True
+        self.backup.submit('backup')
+        self.backup.thread.join(timeout=3)
+        failed = self.backup.status()
+        self.assertTrue(failed['backupError'])
+        self.assertEqual(failed['lastSuccess'], config['lastSuccess'])
+        self.assertTrue(failed['lastAttempt'])
+
+        restarted = services.GitHubBackup(self.backup.home, self.data, self.backup.roots.items())
+        restarted.api = self.remote.api
+        self.assertEqual(restarted.status()['backupError'], failed['backupError'])
+        self.remote.reject_push = False
+        before = len(self.remote.calls)
+        restarted.start_scheduler(interval=.01)
+        self.addCleanup(restarted.stop_event.set)
+        time.sleep(.05)
+        self.assertEqual(len(self.remote.calls), before)
+
+        retry_time = datetime.now(timezone.utc) - timedelta(hours=2)
+        restarted.report(lastAttempt=retry_time.isoformat())
+        deadline = time.monotonic() + 3
+        while time.monotonic() < deadline and restarted.status()['backupError']:
+            time.sleep(.02)
+        self.assertIsNone(restarted.status()['backupError'])
+        self.assertNotEqual(restarted.status()['lastSuccess'], failed['lastSuccess'])
         self.assertGreater(len(self.remote.calls), before)
 
     def test_restore_refuses_missing_skill_manifest(self):

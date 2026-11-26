@@ -129,6 +129,43 @@ class CatalogTests(IsolatedState):
 
 
 class DiscoveryTests(IsolatedState):
+    def test_folder_rename_keeps_catalog_placement(self):
+        root = self.base / 'skills'
+        old = root / 'draft'
+        old.mkdir(parents=True)
+        (old / 'SKILL.md').write_text('---\nname: tool-draft\n---\nBody', encoding='utf-8')
+        if not getattr(old.stat(), 'st_ino', 0) or not hasattr(old.stat(), 'st_birthtime'):
+            self.skipTest('Filesystem does not expose a stable folder identity')
+        with patch.object(server, 'ROOTS', [(root, 'Personal')]):
+            server.reconcile_skill_renames()
+            new = old.rename(root / 'renamed')
+            (new / 'SKILL.md').write_text('---\nname: renamed\n---\nEdited body', encoding='utf-8')
+            server.reconcile_skill_renames()
+            entries = server.skills()
+            catalog = server.read_catalog()
+            server.purpose_groups(entries, catalog)
+            self.assertEqual(catalog['groups'][0]['skills'], [{'name': 'renamed', 'step': 1}, 'revise'])
+            self.assertEqual(entries[0]['groups'], ['writing', 'tools'])
+            self.assertEqual(entries[0]['steps'], {'writing': 1})
+            self.assertEqual([issue['name'] for issue in server.missing_catalog_entries(entries, catalog)], ['revise'])
+            server.reconcile_skill_renames()
+            self.assertEqual(server.read_catalog(), catalog)
+
+    def test_replacement_folder_leaves_missing_catalog_entry_for_review(self):
+        root = self.base / 'skills'
+        old = root / 'draft'
+        old.mkdir(parents=True)
+        (old / 'SKILL.md').write_text('Body', encoding='utf-8')
+        with patch.object(server, 'ROOTS', [(root, 'Personal')]):
+            server.reconcile_skill_renames()
+            new = root / 'replacement'
+            new.mkdir()
+            (new / 'SKILL.md').write_text('Body', encoding='utf-8')
+            old.rename(self.base / 'removed')
+            server.reconcile_skill_renames()
+            self.assertEqual(server.read_catalog(), config())
+            self.assertIn('draft', [issue['name'] for issue in server.missing_catalog_entries(server.skills())])
+
     def test_picker_title_refresh_and_fallback(self):
         root = self.base / 'skills'; root.mkdir()
         (root / 'SKILL.md').write_text('---\nname: fixture\ndescription: Example\n---\nBody', encoding='utf-8')
@@ -199,7 +236,7 @@ class HttpTests(IsolatedState):
             self.assertEqual(error.exception.code, 404); error.exception.close()
 
     def test_mutations_require_origin_and_token(self):
-        for path in ['/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup']:
+        for path in ['/api/delete', '/api/place', '/api/catalog', '/api/settings', '/api/update', '/api/launcher', '/api/backup', '/api/skill-renames']:
             for headers in [{'Origin': 'https://example.com', 'X-Library-Token': server.TOKEN}, {'Origin': self.url}]:
                 with self.assertRaises(urllib.error.HTTPError) as error: self.request(path, {}, headers)
                 self.assertEqual(error.exception.code, 403); error.exception.close()
