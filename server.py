@@ -655,10 +655,10 @@ def skill_warnings(entries):
         item['warnings'] = []
     for item in personal:
         warnings = item['warnings']
-        labels = [('folder', item['folder']), ('name', item['name']), ('display name', item['displayName'])]
-        if len({canonical(value) for _, value in labels}) > 1:
-            warnings.append({'kind': 'name-mismatch', 'message': 'Names disagree: ' + ', '.join(
-                label + ' “' + value + '”' for label, value in labels) + '. Keep the folder, name: and display_name the same.'})
+        folder, name = item['folder'], item['name']
+        if canonical(folder) != canonical(name):
+            warnings.append({'kind': 'name-mismatch', 'message':
+                             f'Folder “{folder}” and SKILL.md name “{name}” disagree. Keep these identifiers aligned.'})
         others = [copy for other in by_name[canonical(item['name'])] for copy in other['copies']
                   if other is not item]
         if len(item['copies']) > 1 or others:

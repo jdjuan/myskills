@@ -73,11 +73,15 @@ class HealthTests(HealthBase):
         self.assertEqual(self.warnings('add-product-to-jdjuan-io'), {})
         self.assertEqual(self.warnings('plain'), {})
 
-    def test_name_mismatch_is_warned_not_renamed(self):
+    def test_custom_display_name_does_not_require_attention(self):
         make_skill(self.agents / 'create-demo', name='create-demo', display='Demo Video')
-        make_skill(self.agents / 'talking-video', name='reel-maker')
+        item = next(item for item in server.skills() if item['name'] == 'create-demo')
+        self.assertEqual(item['displayName'], 'Demo Video')
+        self.assertEqual(item['warnings'], [])
+
+    def test_name_mismatch_is_warned_not_renamed(self):
+        make_skill(self.agents / 'talking-video', name='reel-maker', display='Talking Video')
         before = snapshot(self.agents)
-        self.assertIn('Demo Video', self.warnings('create-demo')['name-mismatch']['message'])
         self.assertIn('talking-video', self.warnings('reel-maker')['name-mismatch']['message'])
         self.assertEqual(snapshot(self.agents), before)
 
