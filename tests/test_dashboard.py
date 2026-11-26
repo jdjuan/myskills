@@ -102,6 +102,21 @@ class CatalogTests(IsolatedState):
             self.assertEqual(catalog['groups'][1]['excluded_skills'], ['tool-a'])
             with self.assertRaises(ValueError): server.place_skill('d', 'tools', anchor='r')
 
+    def test_move_into_a_new_category(self):
+        value = config(); value['groups'].append({'id': 'later', 'label': 'Later', 'section': 'Other', 'skills': []})
+        storage.atomic_json(self.data / 'catalog.json', value)
+        items = [dict(entry('draft'), id='d'), dict(entry('tool-a'), id='a')]
+        with patch.object(server, 'skills', return_value=items):
+            self.assertEqual(server.place_skill('a', None, new_category={'label': 'Research notes', 'section': 'Work'})['message'], 'Skill moved to Research notes.')
+            catalog = server.read_catalog()
+            self.assertEqual([g['id'] for g in catalog['groups']], ['writing', 'tools', 'research-notes', 'later'])
+            self.assertEqual(catalog['groups'][2], {'id': 'research-notes', 'label': 'Research notes', 'section': 'Work', 'area': 'Work', 'skills': ['tool-a'], 'excluded_skills': []})
+            self.assertEqual(catalog['groups'][1]['excluded_skills'], ['tool-a'])
+            server.place_skill('d', None, new_category={'label': 'Fresh', 'section': 'Brand new'})
+            self.assertEqual(server.read_catalog()['groups'][-1]['label'], 'Fresh')
+            with self.assertRaises(ValueError): server.place_skill('d', None, new_category={'label': 'writing'})
+            with self.assertRaises(ValueError): server.place_skill('d', None, new_category={'label': '  '})
+
     def test_conflict_preserves_external_edit(self):
         old = server.read_catalog()
         revision = storage.revision(old)

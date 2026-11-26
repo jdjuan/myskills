@@ -199,11 +199,34 @@ def member_name(member):
     return member if isinstance(member, str) else member['name']
 
 
-def place_skill(skill_id, group_id, expected=None, anchor=None, after=False):
+def add_category(config, label, section):
+    """Append a new category after the last one in its sidebar section, and return it."""
+    label = label.strip() if isinstance(label, str) else ''
+    section = section.strip() if isinstance(section, str) and section.strip() else 'My skills'
+    if not 0 < len(label) <= 80 or len(section) > 80:
+        raise ValueError('Give the new category a name of up to 80 characters.')
+    if any(g['label'].casefold() == label.casefold() for g in config['groups']):
+        raise ValueError('A category named ' + label + ' already exists.')
+    base = re.sub(r'[^a-z0-9]+', '-', label.casefold()).strip('-')[:40] or 'category'
+    taken = {g['id'] for g in config['groups']} | {config['fallback_group']['id']}
+    identifier = base if base not in taken and not base.startswith(('plugin-', 'toolkit-')) else None
+    counter = 2
+    while identifier is None:
+        candidate = f'category-{base}-{counter}'
+        identifier = candidate if candidate not in taken else None
+        counter += 1
+    group = {'id': identifier, 'label': label, 'section': section, 'area': section, 'skills': []}
+    last = max((i for i, g in enumerate(config['groups']) if g['section'] == section), default=len(config['groups']) - 1)
+    config['groups'].insert(last + 1, group)
+    return group
+
+
+def place_skill(skill_id, group_id, expected=None, anchor=None, after=False, new_category=None):
     """Move a personal skill, or reorder it next to another skill of the same category.
 
     Dropping a skill on a category it already belongs to only changes its position there; moving it
-    elsewhere removes it from its other categories while retaining prefix rules for other skills."""
+    elsewhere removes it from its other categories while retaining prefix rules for other skills.
+    With new_category ({label, section}) the category is created and the skill moved into it at once."""
     with DELETE_LOCK:
         entries = skills()
         item = next((s for s in entries if s['id'] == skill_id), None)
@@ -213,6 +236,10 @@ def place_skill(skill_id, group_id, expected=None, anchor=None, after=False):
         before = storage.revision(config)
         if expected is not None and expected != before:
             raise storage.ConflictError('The catalog changed. Reload before moving this skill.')
+        if new_category is not None:
+            if not isinstance(new_category, dict) or anchor is not None:
+                raise ValueError('Invalid new category.')
+            group_id = add_category(config, new_category.get('label'), new_category.get('section'))['id']
         target = next((g for g in config['groups'] if g['id'] == group_id), None)
         if target is None and group_id != config['fallback_group']['id']:
             raise ValueError('Choose an existing category.')
@@ -938,12 +965,12 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == '/api/customize':
                 return self.json_response(customize_skill(payload['id'], payload.get('revision')))
             if self.path == '/api/place':
-                if not isinstance(payload.get('group'), str):
+                if not isinstance(payload.get('group'), str) and payload.get('newCategory') is None:
                     raise ValueError('Invalid category')
                 anchor = payload.get('anchor')
                 if anchor is not None and not isinstance(anchor, str):
                     raise ValueError('Invalid skill')
-                self.json_response(place_skill(payload['id'], payload['group'], payload.get('revision'), anchor, payload.get('after') is True))
+                self.json_response(place_skill(payload['id'], payload.get('group'), payload.get('revision'), anchor, payload.get('after') is True, payload.get('newCategory')))
             else:
                 self.json_response(trash_skill(payload['id']))
         except storage.ConflictError as error:
